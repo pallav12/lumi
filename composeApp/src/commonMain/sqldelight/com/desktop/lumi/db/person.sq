@@ -1,0 +1,17 @@
+CREATE TABLE person (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    relationshipType TEXT NOT NULL,
+    reminderHour INTEGER NOT NULL,
+    reminderMinute INTEGER NOT NULL
+);
+
+selectPerson:
+SELECT * FROM person LIMIT 1;
+
+insertPerson:
+INSERT INTO person(name, relationshipType, reminderHour, reminderMinute)
+VALUES (?, ?, ?, ?);
+
+deletePerson:
+DELETE FROM person;

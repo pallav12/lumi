@@ -1,0 +1,14 @@
+CREATE TABLE interaction (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    moodEffect INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectAllInteractions:
+SELECT * FROM interaction
+ORDER BY timestamp DESC;
+
+insertInteraction:
+INSERT INTO interaction(type, moodEffect, timestamp)
+VALUES (?, ?, ?);

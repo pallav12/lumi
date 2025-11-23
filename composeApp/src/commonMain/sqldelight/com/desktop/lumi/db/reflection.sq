@@ -1,0 +1,18 @@
+CREATE TABLE reflection (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mood INTEGER NOT NULL,
+    note TEXT,
+    timestamp INTEGER NOT NULL
+);
+
+selectToday:
+SELECT * FROM reflection
+ORDER BY timestamp DESC LIMIT 1;
+
+selectLast7:
+SELECT * FROM reflection
+ORDER BY timestamp DESC LIMIT 7;
+
+insertReflection:
+INSERT INTO reflection(mood, note, timestamp)
+VALUES (?, ?, ?);
