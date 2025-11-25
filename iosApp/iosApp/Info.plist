@@ -4,5 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+    <key>NSUserNotificationAlertStyle</key>
+    <string>alert</string>
+    <key>UNUserNotificationCenter</key>
+    <true/>
 </dict>
 </plist>

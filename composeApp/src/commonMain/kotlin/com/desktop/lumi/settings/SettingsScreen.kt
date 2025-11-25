@@ -42,7 +42,6 @@ fun SettingsScreen(
     onEditReminderTime: () -> Unit,
     onToggleNotifications: (Boolean) -> Unit,
     notificationsEnabled: Boolean,
-    onExportData: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -61,9 +60,9 @@ fun SettingsScreen(
             IconButton(onClick = onBack) {
                 Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
             }
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Text(
                 text = "Settings",
                 fontSize = 24.sp,
@@ -120,21 +119,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Data Section
-            item {
-                SettingsSection(
-                    title = "Data",
-                    items = {
-                        SettingsRow(
-                            label = "Export data",
-                            value = "",
-                            onClick = onExportData,
-                            showValue = false
-                        )
-                    }
-                )
-            }
-
             // Bottom padding
             item {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -157,7 +141,7 @@ private fun SettingsSection(
             color = Color(0xFF777777),
             modifier = Modifier.padding(bottom = 12.dp)
         )
-        
+
         // Section items
         items()
     }
@@ -193,7 +177,7 @@ private fun SettingsRow(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        
+
         // Chevron icon
         Text(
             text = ">",
@@ -227,7 +211,7 @@ private fun SettingsToggleRow(
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
@@ -254,7 +238,6 @@ fun PreviewSettingsScreen() {
             onEditReminderTime = {},
             onToggleNotifications = {},
             notificationsEnabled = true,
-            onExportData = {},
             onBack = {}
         )
     }

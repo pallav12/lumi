@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,8 +34,10 @@ private val PrimarySoftDarker = Color(0xFF9B8AB8) // Slightly darker for enabled
 fun OnboardingNameScreen(
     name: String,
     onNameChange: (String) -> Unit,
-    onNext: () -> Unit
-) {
+    onNext: () -> Unit,
+    onBack: () -> Unit          // ⬅ NEW
+)
+{
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,7 +47,14 @@ fun OnboardingNameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Title
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "Who are you reflecting about?",
             fontSize = 24.sp,
@@ -127,5 +137,5 @@ fun OnboardingNameScreen(
 @Preview
 @Composable
 fun PreviewOnboardingScreen() {
-    OnboardingNameScreen("", {}, {})
+    OnboardingNameScreen("", {}, {}, {})
 }

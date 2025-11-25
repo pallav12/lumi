@@ -6,18 +6,20 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
 sealed class TimelineItemUi {
-    data class Reflection(
+    abstract val timestamp: Long
+
+    data class ReflectionItem(
         val id: Long,
-        val date: LocalDate,
-        val mood: Int, // 1–5
-        val note: String?
+        val mood: Int,
+        val note: String,
+        override val timestamp: Long
     ) : TimelineItemUi()
 
-    data class Interaction(
+    data class InteractionItem(
         val id: Long,
-        val timestamp: LocalDateTime,
         val type: InteractionType,
-        val moodEffect: MoodEffect
+        val moodEffect: MoodEffect,
+        override val timestamp: Long
     ) : TimelineItemUi()
 }
 

@@ -15,13 +15,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +58,7 @@ private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
 private val SoftGreen = Color(0xFFE8F5E8) // Very light green
 private val SoftOrange = Color(0xFFFFF4E6) // Very light orange
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     personName: String,
@@ -60,58 +68,73 @@ fun HomeScreen(
     onLogInteraction: () -> Unit,
     onOpenInsights: () -> Unit,
     onOpenTimeline: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Hi, $personName") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
+        }) {
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp)
+                .padding(top = 60.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
+        ) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp)
-            .padding(top = 60.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        // Header
-        GreetingHeader(
-            personName = personName,
-            hasReflection = todayReflection != null
-        )
+            // Header
+            GreetingHeader(
+                personName = personName,
+                hasReflection = todayReflection != null
+            )
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Today Card
-        TodayReflectionCard(
-            todayReflection = todayReflection,
-            onLogReflection = onLogReflection
-        )
+            // Today Card
+            TodayReflectionCard(
+                todayReflection = todayReflection,
+                onLogReflection = onLogReflection
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Quick Actions
-        QuickActions(
-            onLogInteraction = onLogInteraction,
-            onOpenInsights = onOpenInsights
-        )
+            // Quick Actions
+            QuickActions(
+                onLogInteraction = onLogInteraction,
+                onOpenInsights = onOpenInsights
+            )
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Weekly Trend Section
-        WeeklyTrendSection(
-            weeklyTrend = weeklyTrend
-        )
+            // Weekly Trend Section
+            WeeklyTrendSection(
+                weeklyTrend = weeklyTrend
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Timeline Call to Action
-        TimelineCallToAction(
-            onOpenTimeline = onOpenTimeline
-        )
+            // Timeline Call to Action
+            TimelineCallToAction(
+                onOpenTimeline = onOpenTimeline
+            )
 
-        // Bottom padding for scroll
-        Spacer(modifier = Modifier.height(32.dp))
+            // Bottom padding for scroll
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
     }
+
 }
 
 @Composable
@@ -450,7 +473,8 @@ fun PreviewHomeScreenNoReflection() {
             onLogReflection = {},
             onLogInteraction = {},
             onOpenInsights = {},
-            onOpenTimeline = {}
+            onOpenTimeline = {},
+            onOpenSettings = {}
         )
     }
 }
@@ -473,7 +497,8 @@ fun PreviewHomeScreenWithReflection() {
             onLogReflection = {},
             onLogInteraction = {},
             onOpenInsights = {},
-            onOpenTimeline = {}
+            onOpenTimeline = {},
+            onOpenSettings = {}
         )
     }
 }

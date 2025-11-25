@@ -30,11 +30,15 @@ import androidx.compose.ui.unit.sp
 import com.desktop.lumi.insights.models.TimelineItemUi
 import com.desktop.lumi.home.presentation.InteractionType
 import com.desktop.lumi.home.presentation.MoodEffect
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.ExperimentalTime
 
 private val SoftPink = Color(0xFFFFE5F1) // Very light pink
 private val SoftBlue = Color(0xFFE5F0FF) // Very light blue
@@ -96,13 +100,18 @@ private fun formatDateHeader(date: LocalDate): String {
     }
 }
 
+// Convert Long timestamp to LocalDate
+@OptIn(ExperimentalTime::class)
+private fun Long.toLocalDate(): LocalDate {
+    val instant = Instant.fromEpochMilliseconds(this)
+    val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    return dateTime.date
+}
+
 // Group items by date
 private fun groupItemsByDate(items: List<TimelineItemUi>): Map<LocalDate, List<TimelineItemUi>> {
     return items.groupBy { item ->
-        when (item) {
-            is TimelineItemUi.Reflection -> item.date
-            is TimelineItemUi.Interaction -> LocalDate(item.timestamp.year, item.timestamp.monthNumber, item.timestamp.dayOfMonth)
-        }
+        item.timestamp.toLocalDate()
     }
 }
 
@@ -123,7 +132,8 @@ fun TimelineScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(top = 48.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
@@ -139,6 +149,7 @@ fun TimelineScreen(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Your emotional story, day by day.",
                     fontSize = 14.sp,
@@ -178,31 +189,30 @@ fun TimelineScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 sortedDates.forEach { date ->
                     val dateItems = groupedItems[date] ?: emptyList()
                     
                     // Date header
                     item {
-                        Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             text = formatDateHeader(date),
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.SemiBold,
                             color = Color(0xFF555555),
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
                     
                     // Items for this date
                     items(dateItems) { item ->
                         when (item) {
-                            is TimelineItemUi.Reflection -> {
+                            is TimelineItemUi.ReflectionItem -> {
                                 ReflectionCard(reflection = item)
                             }
-                            is TimelineItemUi.Interaction -> {
+                            is TimelineItemUi.InteractionItem -> {
                                 InteractionCard(interaction = item)
                             }
                         }
@@ -214,9 +224,11 @@ fun TimelineScreen(
 }
 
 @Composable
-private fun ReflectionCard(reflection: TimelineItemUi.Reflection) {
+private fun ReflectionCard(reflection: TimelineItemUi.ReflectionItem) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = PrimarySoft.copy(alpha = 0.08f)
@@ -226,31 +238,31 @@ private fun ReflectionCard(reflection: TimelineItemUi.Reflection) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Mood emoji
             Text(
                 text = getMoodEmoji(reflection.mood),
                 fontSize = 32.sp,
-                modifier = Modifier.padding(end = 12.dp)
+                modifier = Modifier.padding(end = 16.dp)
             )
             
             // Content
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                if (reflection.note != null) {
+                if (reflection.note.isNotEmpty()) {
                     Text(
                         text = reflection.note,
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 20.sp
+                        lineHeight = 22.sp
                     )
                 } else {
                     Text(
                         text = "Reflection",
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
@@ -260,9 +272,11 @@ private fun ReflectionCard(reflection: TimelineItemUi.Reflection) {
 }
 
 @Composable
-private fun InteractionCard(interaction: TimelineItemUi.Interaction) {
+private fun InteractionCard(interaction: TimelineItemUi.InteractionItem) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = PrimarySoft.copy(alpha = 0.08f)
@@ -272,14 +286,14 @@ private fun InteractionCard(interaction: TimelineItemUi.Interaction) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Interaction emoji
             Text(
                 text = getInteractionEmoji(interaction.type),
-                fontSize = 24.sp,
-                modifier = Modifier.padding(end = 12.dp)
+                fontSize = 28.sp,
+                modifier = Modifier.padding(end = 16.dp)
             )
             
             // Content
@@ -288,13 +302,14 @@ private fun InteractionCard(interaction: TimelineItemUi.Interaction) {
             ) {
                 Text(
                     text = getInteractionLabel(interaction.type),
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium
                 )
             }
             
             // Mood effect chip
+            Spacer(modifier = Modifier.width(8.dp))
             MoodEffectChip(moodEffect = interaction.moodEffect)
         }
     }
@@ -314,43 +329,48 @@ private fun MoodEffectChip(moodEffect: MoodEffect) {
                 color = backgroundColor,
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
         Text(
             text = text,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Preview
 @Composable
 fun PreviewTimelineScreen() {
     // Fake sample data for preview
+    val now = kotlin.time.Clock.System.now()
+    val nowMs = now.toEpochMilliseconds()
+    val oneDayMs = 24 * 60 * 60 * 1000L
+    
     val sampleItems = listOf(
-        TimelineItemUi.Reflection(
+        TimelineItemUi.ReflectionItem(
             id = 1L,
-            date = LocalDate(2025, 2, 25),
             mood = 4,
-            note = "Had a nice call, felt closer today."
+            note = "Had a nice call, felt closer today.",
+            timestamp = nowMs - 3600000 // 1 hour ago
         ),
-        TimelineItemUi.Interaction(
+        TimelineItemUi.InteractionItem(
             id = 2L,
-            timestamp = LocalDateTime(2025, 2, 25, 18, 30),
+            timestamp = nowMs - 7200000, // 2 hours ago
             type = InteractionType.Call,
             moodEffect = MoodEffect.Better
         ),
-        TimelineItemUi.Reflection(
+        TimelineItemUi.ReflectionItem(
             id = 3L,
-            date = LocalDate(2025, 2, 24),
             mood = 2,
-            note = "Felt distant, conversation was dry."
+            note = "Felt distant, conversation was dry.",
+            timestamp = nowMs - oneDayMs // Yesterday
         ),
-        TimelineItemUi.Interaction(
+        TimelineItemUi.InteractionItem(
             id = 4L,
-            timestamp = LocalDateTime(2025, 2, 24, 21, 10),
+            timestamp = nowMs - oneDayMs - 3600000, // Yesterday, 1 hour earlier
             type = InteractionType.Text,
             moodEffect = MoodEffect.Worse
         )

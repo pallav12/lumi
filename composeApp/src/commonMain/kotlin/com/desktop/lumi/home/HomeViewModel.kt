@@ -8,31 +8,49 @@ import com.desktop.lumi.domain.repository.PersonRepository
 import com.desktop.lumi.domain.repository.ReflectionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 class HomeViewModel(
     private val personRepository: PersonRepository,
     private val insightsRepository: InsightsRepository,
     private val reflectionRepository: ReflectionRepository
 ) : ViewModel() {
 
-    private val _currentScreen = MutableStateFlow<Screen>(Screen.OnboardingName)
+    private val _currentScreen = MutableStateFlow<Screen>(Screen.OnboardingName())
     val currentScreen: StateFlow<Screen> = _currentScreen
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
+        determineInitialScreen()
         observePerson()
         observeTodayReflection()
         observeWeeklyTrend()
+    }
+
+    private fun determineInitialScreen() {
+        viewModelScope.launch {
+            personRepository.getPerson()
+                .take(1) // Only check once
+                .collect { person ->
+                    _currentScreen.value = if (person == null) {
+                        Screen.OnboardingName()
+                    } else {
+                        Screen.Home
+                    }
+                }
+        }
     }
 
     fun setCurrentScreen(screen: Screen) {
         _currentScreen.value = screen
     }
 
+    // ------------------
+    // OBSERVERS
+    // ------------------
 
     private fun observePerson() {
         viewModelScope.launch {
@@ -46,7 +64,6 @@ class HomeViewModel(
                 }
         }
     }
-
 
     private fun observeTodayReflection() {
         viewModelScope.launch {
@@ -82,7 +99,6 @@ class HomeViewModel(
                 }
         }
     }
-
 
     data class HomeUiState(
         val personName: String = "",

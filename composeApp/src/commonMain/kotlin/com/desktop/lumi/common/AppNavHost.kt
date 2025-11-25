@@ -32,24 +32,34 @@ fun AppNavHost(
 
     when (current) {
 
-        Screen.OnboardingName -> {
+        is Screen.OnboardingName -> {
             OnboardingNameScreen(
                 name = onboardingViewModel.uiState.collectAsStateWithLifecycle().value.name,
                 onNameChange = { onboardingViewModel.onNameChange(it) },
-                onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingType) }
+                onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingType(current.fromSettings)) },
+                onBack = {
+                    if ((current ).fromSettings) {
+                        homeViewModel.setCurrentScreen(Screen.Settings)
+                    }
+                }
             )
         }
 
-        Screen.OnboardingType -> {
+        is Screen.OnboardingType -> {
             val state = onboardingViewModel.uiState.collectAsStateWithLifecycle().value
             OnboardingRelationshipTypeScreen(
                 selectedType = state.relationshipType,
                 onSelectType = { onboardingViewModel.onRelationshipTypeChange(it) },
-                onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder) }
+                onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder(current.fromSettings)) },
+                onBack = {
+                    if ((current ).fromSettings) {
+                        homeViewModel.setCurrentScreen(Screen.Settings)
+                    }
+                }
             )
         }
 
-        Screen.OnboardingReminder -> {
+        is Screen.OnboardingReminder -> {
             val state = onboardingViewModel.uiState.collectAsStateWithLifecycle().value
             OnboardingReminderTimeScreen(
                 hour = state.reminderHour,
@@ -58,6 +68,11 @@ fun AppNavHost(
                 onFinish = {
                     onboardingViewModel.completeOnboarding()
                     homeViewModel.setCurrentScreen(Screen.Home)
+                },
+                onBack = {
+                    if ((current ).fromSettings) {
+                        homeViewModel.setCurrentScreen(Screen.Settings)
+                    }
                 }
             )
         }
@@ -71,7 +86,8 @@ fun AppNavHost(
                 onLogReflection = { homeViewModel.setCurrentScreen(Screen.Reflection) },
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
-                onOpenTimeline = { homeViewModel.setCurrentScreen(Screen.Timeline) }
+                onOpenTimeline = { homeViewModel.setCurrentScreen(Screen.Timeline) },
+                onOpenSettings = {homeViewModel.setCurrentScreen(Screen.Settings)}
             )
         }
 
@@ -133,12 +149,11 @@ fun AppNavHost(
                 personName = state.personName,
                 relationshipType = state.relationshipType,
                 reminderTime = state.reminderTime,
-                onEditName = { homeViewModel.setCurrentScreen(Screen.OnboardingName) },
-                onEditRelationshipType = { homeViewModel.setCurrentScreen(Screen.OnboardingType) },
-                onEditReminderTime = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder) },
+                onEditName = { homeViewModel.setCurrentScreen(Screen.OnboardingName(true)) },
+                onEditRelationshipType = { homeViewModel.setCurrentScreen(Screen.OnboardingType(true)) },
+                onEditReminderTime = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder(true)) },
                 onToggleNotifications = { settingsViewModel.onToggleNotifications(it) },
                 notificationsEnabled = state.notificationsEnabled,
-                onExportData = { settingsViewModel.onExportData() },
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )
         }

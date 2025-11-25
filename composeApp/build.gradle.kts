@@ -31,11 +31,14 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.hilt.android)
+            val work_version = "2.9.0"
+            implementation("androidx.work:work-runtime-ktx:$work_version")
             implementation(libs.sqldelight.android.driver) // ❗ Add Android driver
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
+            implementation(compose.materialIconsExtended)
             implementation(libs.coroutines.extensions)
             implementation(compose.material3)
             implementation(compose.ui)

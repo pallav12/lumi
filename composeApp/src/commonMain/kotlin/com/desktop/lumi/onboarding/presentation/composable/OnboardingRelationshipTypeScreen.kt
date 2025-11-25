@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,8 @@ private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
 fun OnboardingRelationshipTypeScreen(
     selectedType: RelationshipType?,
     onSelectType: (RelationshipType) -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     
@@ -50,6 +52,15 @@ fun OnboardingRelationshipTypeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
         // Title
         Text(
             text = "What best describes your relationship?",
@@ -185,7 +196,8 @@ fun PreviewOnboardingRelationshipTypeScreen() {
         OnboardingRelationshipTypeScreen(
             selectedType = null,
             onSelectType = {},
-            onNext = {}
+            onNext = {},
+            onBack = {}
         )
     }
 }

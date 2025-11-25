@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +40,8 @@ fun OnboardingReminderTimeScreen(
     hour: Int,                // 0–23
     minute: Int,              // 0–59
     onTimeChange: (Int, Int) -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    onBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -53,6 +55,15 @@ fun OnboardingReminderTimeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
         // Title
         Text(
             text = "When should I remind you to reflect?",
@@ -239,7 +250,8 @@ fun PreviewOnboardingReminderTimeScreen() {
             hour = 9,
             minute = 30,
             onTimeChange = { _, _ -> },
-            onFinish = {}
+            onFinish = {},
+            onBack = {}
         )
     }
 }

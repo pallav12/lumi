@@ -1,18 +1,26 @@
 package com.desktop.lumi.db.com.desktop.lumi.di
 
+import com.desktop.lumi.data.repository.InsightsRepositoryImpl
+import com.desktop.lumi.data.repository.InteractionRepositoryImpl
+import com.desktop.lumi.data.repository.PersonRepositoryImpl
+import com.desktop.lumi.data.repository.ReflectionRepositoryImpl
 import com.desktop.lumi.db.AppDatabase
-import com.desktop.lumi.domain.repository.*
-import com.desktop.lumi.data.repository.*
-import com.desktop.lumi.home.HomeViewModel
-import com.desktop.lumi.insights.InsightsViewModel
-import com.desktop.lumi.settings.SettingsViewModel
 import com.desktop.lumi.db.DatabaseDriverFactory
+import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
+import com.desktop.lumi.domain.repository.InsightsRepository
+import com.desktop.lumi.domain.repository.InteractionRepository
+import com.desktop.lumi.domain.repository.PersonRepository
+import com.desktop.lumi.domain.repository.ReflectionRepository
+import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
 import com.desktop.lumi.home.presentation.ReflectionViewModel
+import com.desktop.lumi.insights.InsightsViewModel
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
+import com.desktop.lumi.settings.SettingsViewModel
 
 class AppModule(
-    driverFactory: DatabaseDriverFactory
+    driverFactory: DatabaseDriverFactory,
+    private val notificationScheduler: NotificationScheduler? = null
 ) {
     val database: AppDatabase = AppDatabase(driverFactory.createDriver())
 
@@ -29,13 +37,15 @@ class AppModule(
         reflectionRepository
     )
 
-    fun provideOnboardingViewModel() = OnboardingViewModel(personRepository)
+    fun provideOnboardingViewModel() = OnboardingViewModel(
+        personRepository,
+        notificationScheduler
+    )
 
     fun provideReflectionViewModel() = ReflectionViewModel(reflectionRepository)
 
     fun provideInteractionViewModel() = InteractionViewModel(interactionRepository)
 
-    fun provideInsightsViewModel() = InsightsViewModel(insightsRepository)
-
-    fun provideSettingsViewModel() = SettingsViewModel(personRepository)
+    fun provideInsightsViewModel() =
+        InsightsViewModel(insightsRepository, reflectionRepository, interactionRepository)
 }
