@@ -34,5 +34,19 @@ class InteractionRepositoryImpl(
             timestamp = interaction.timestamp
         )
     }
+
+    override suspend fun getRecentInteractionsOfType(type: String): List<Interaction> {
+        return db.interactionQueries
+            .getRecentInteractionsByType(type)
+            .executeAsList()
+            .map {
+                Interaction(
+                    id = it.id,
+                    type = it.type,
+                    moodEffect = it.moodEffect.toInt(),
+                    timestamp = it.timestamp
+                )
+            }
+    }
 }
 

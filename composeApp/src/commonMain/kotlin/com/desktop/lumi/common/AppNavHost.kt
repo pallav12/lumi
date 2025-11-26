@@ -80,14 +80,13 @@ fun AppNavHost(
         Screen.Home -> {
             val state = homeViewModel.uiState.collectAsStateWithLifecycle().value
             HomeScreen(
-                personName = state.personName,
-                todayReflection = state.todayReflection,
-                weeklyTrend = state.weeklyTrend,
+                uiState = state,
                 onLogReflection = { homeViewModel.setCurrentScreen(Screen.Reflection) },
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
                 onOpenTimeline = { homeViewModel.setCurrentScreen(Screen.Timeline) },
-                onOpenSettings = {homeViewModel.setCurrentScreen(Screen.Settings)}
+                onOpenSettings = {homeViewModel.setCurrentScreen(Screen.Settings)},
+                onDismissInsight = {homeViewModel.clearInstantInsight()}
             )
         }
 
@@ -125,9 +124,10 @@ fun AppNavHost(
                     }
                     interactionViewModel.onMoodEffectSelected(moodEffectInt)
                 },
-                onSave = {
+                onSave = {interactionType->
                     interactionViewModel.saveInteraction()
                     homeViewModel.setCurrentScreen(Screen.Home)
+                    homeViewModel.showInstantInsight(interactionType)
                 },
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )

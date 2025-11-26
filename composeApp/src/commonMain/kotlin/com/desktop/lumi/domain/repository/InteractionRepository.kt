@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface InteractionRepository {
     fun getInteractions(): Flow<List<Interaction>>
     suspend fun saveInteraction(interaction: Interaction)
+    suspend fun getRecentInteractionsOfType(type: String): List<Interaction>
 }
 

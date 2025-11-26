@@ -4,8 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desktop.lumi.domain.model.Interaction
 import com.desktop.lumi.domain.repository.InteractionRepository
+import com.desktop.lumi.instantmirror.InstantInsight
+import com.desktop.lumi.instantmirror.MessageGenerator
+import com.desktop.lumi.instantmirror.PatternMatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -22,32 +26,27 @@ class InteractionViewModel(
     )
 
     fun onTypeSelected(type: InteractionType) {
-        _uiState.value = _uiState.value.copy(type = type)
+        _uiState.update { it.copy(type = type) }
     }
 
     fun onMoodEffectSelected(effect: Int) {
-        _uiState.value = _uiState.value.copy(moodEffect = effect)
+        _uiState.update { it.copy(moodEffect = effect) }
     }
 
-    /**
-     * Saves interaction log into SQLDelight DB.
-     */
     @OptIn(ExperimentalTime::class)
     fun saveInteraction() {
         viewModelScope.launch {
             val state = _uiState.value
+            val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
 
             val interaction = Interaction(
-                id = 0L, // auto-incremented by SQLDelight
-                type = state.type.name, // stored as String in DB
+                id = 0L,
+                type = state.type.name,
                 moodEffect = state.moodEffect,
-                timestamp = kotlin.time.Clock.System.now().toEpochMilliseconds()
+                timestamp = now
             )
 
             interactionRepository.saveInteraction(interaction)
-
-            // Reset UI for next log
-            _uiState.value = InteractionUiState()
         }
     }
 }

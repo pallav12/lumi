@@ -7,6 +7,7 @@ import com.desktop.lumi.domain.repository.InteractionRepository
 import com.desktop.lumi.domain.repository.ReflectionRepository
 import com.desktop.lumi.home.presentation.InteractionType
 import com.desktop.lumi.home.presentation.MoodEffect
+import com.desktop.lumi.home.presentation.toMoodEffectOrSame
 import com.desktop.lumi.insights.models.TimelineItemUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -77,14 +78,8 @@ class InsightsViewModel(
                 }
 
                 val interactionItems = interactions.map {
-
                     val typeEnum = InteractionType.valueOf(it.type)
-
-                    val moodEffectEnum = when (it.moodEffect) {
-                        1 -> MoodEffect.Better
-                        -1 -> MoodEffect.Worse
-                        else -> MoodEffect.Same
-                    }
+                    val moodEffectEnum = it.moodEffect.toMoodEffectOrSame()
 
                     TimelineItemUi.InteractionItem(
                         id = it.id,

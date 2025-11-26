@@ -33,7 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.desktop.lumi.home.presentation.InteractionViewModel
+import com.desktop.lumi.instantmirror.InstantInsightBottomSheet
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 // Enums
@@ -54,7 +54,7 @@ fun InteractionLogScreen(
     selectedMoodEffect: MoodEffect?,            // BETTER, SAME, WORSE or null
     onSelectType: (InteractionType) -> Unit,
     onSelectMoodEffect: (MoodEffect) -> Unit,
-    onSave: () -> Unit,
+    onSave: (InteractionType?) -> Unit,
     onBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -93,7 +93,9 @@ fun InteractionLogScreen(
         // Save Button
         SaveButton(
             enabled = selectedType != null && selectedMoodEffect != null,
-            onSave = onSave
+            onSave = {
+                onSave(selectedType?.type)
+            }
         )
 
         // Bottom padding for scroll

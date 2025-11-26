@@ -12,3 +12,9 @@ ORDER BY timestamp DESC;
 insertInteraction:
 INSERT INTO interaction(type, moodEffect, timestamp)
 VALUES (?, ?, ?);
+
+getRecentInteractionsByType:
+SELECT * FROM interaction
+WHERE type = ?
+ORDER BY timestamp DESC
+LIMIT 5;

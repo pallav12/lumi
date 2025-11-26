@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desktop.lumi.home.HomeViewModel
+import com.desktop.lumi.instantmirror.InstantInsightBottomSheet
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 // UI Models
@@ -61,19 +62,18 @@ private val SoftOrange = Color(0xFFFFF4E6) // Very light orange
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    personName: String,
-    todayReflection: HomeViewModel.ReflectionUiState?,   // null if not submitted today
-    weeklyTrend: HomeViewModel.WeeklyTrendUiState,       // contains mood graph data, positive/negative counts
+    uiState: HomeViewModel.HomeUiState,
     onLogReflection: () -> Unit,
     onLogInteraction: () -> Unit,
     onOpenInsights: () -> Unit,
     onOpenTimeline: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onDismissInsight: ()-> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hi, $personName") },
+                title = { Text("Hi, ${uiState.personName}") },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
@@ -95,15 +95,15 @@ fun HomeScreen(
 
             // Header
             GreetingHeader(
-                personName = personName,
-                hasReflection = todayReflection != null
+                personName = uiState.personName,
+                hasReflection = uiState.todayReflection != null
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Today Card
             TodayReflectionCard(
-                todayReflection = todayReflection,
+                todayReflection = uiState.todayReflection,
                 onLogReflection = onLogReflection
             )
 
@@ -119,7 +119,7 @@ fun HomeScreen(
 
             // Weekly Trend Section
             WeeklyTrendSection(
-                weeklyTrend = weeklyTrend
+                weeklyTrend = uiState.weeklyTrend
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -131,6 +131,11 @@ fun HomeScreen(
 
             // Bottom padding for scroll
             Spacer(modifier = Modifier.height(32.dp))
+
+            InstantInsightBottomSheet(
+                insight = uiState.instantInsight,
+                onDismiss = onDismissInsight
+            )
         }
 
     }
@@ -463,18 +468,20 @@ private fun getMoodEmoji(mood: Int): String {
 fun PreviewHomeScreenNoReflection() {
     MaterialTheme {
         HomeScreen(
-            personName = "Alex",
+            uiState = HomeViewModel.HomeUiState("Alex",
             todayReflection = null,
             weeklyTrend = HomeViewModel.WeeklyTrendUiState(
                 moodPoints = listOf(3, 4, 2, 5, 3, 4, 5),
                 positiveCount = 12,
                 negativeCount = 3
-            ),
+            )),
             onLogReflection = {},
             onLogInteraction = {},
             onOpenInsights = {},
             onOpenTimeline = {},
-            onOpenSettings = {}
+            onOpenSettings = {},
+            onDismissInsight = {}
+
         )
     }
 }
@@ -484,21 +491,23 @@ fun PreviewHomeScreenNoReflection() {
 fun PreviewHomeScreenWithReflection() {
     MaterialTheme {
         HomeScreen(
-            personName = "Jordan",
-            todayReflection = HomeViewModel.ReflectionUiState(
-                mood = 4,
-                note = "Had a wonderful dinner together and talked about our future plans."
-            ),
-            weeklyTrend = HomeViewModel.WeeklyTrendUiState(
-                moodPoints = listOf(3, 4, 2, 5, 3, 4, 4),
-                positiveCount = 8,
-                negativeCount = 2
-            ),
-            onLogReflection = {},
-            onLogInteraction = {},
-            onOpenInsights = {},
-            onOpenTimeline = {},
-            onOpenSettings = {}
-        )
+            uiState = HomeViewModel.HomeUiState(
+                "Jordan",
+                todayReflection = HomeViewModel.ReflectionUiState(
+                    mood = 4,
+                    note = "Had a wonderful dinner together and talked about our future plans."
+                ),
+                weeklyTrend = HomeViewModel.WeeklyTrendUiState(
+                    moodPoints = listOf(3, 4, 2, 5, 3, 4, 4),
+                    positiveCount = 8,
+                    negativeCount = 2
+                )),
+                onLogReflection = {},
+                onLogInteraction = {},
+                onOpenInsights = {},
+                onOpenTimeline = {},
+                onOpenSettings = {},
+                onDismissInsight = {}
+            )
     }
 }

@@ -34,7 +34,8 @@ class AppModule(
     fun provideHomeViewModel() = HomeViewModel(
         personRepository,
         insightsRepository,
-        reflectionRepository
+        reflectionRepository,
+        interactionRepository
     )
 
     fun provideOnboardingViewModel() = OnboardingViewModel(
