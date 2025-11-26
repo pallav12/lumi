@@ -7,5 +7,6 @@ interface InteractionRepository {
     fun getInteractions(): Flow<List<Interaction>>
     suspend fun saveInteraction(interaction: Interaction)
     suspend fun getRecentInteractionsOfType(type: String): List<Interaction>
+    suspend fun getAllInteractions(limit: Int): List<Interaction>
 }
 

@@ -9,6 +9,11 @@ selectAllInteractions:
 SELECT * FROM interaction
 ORDER BY timestamp DESC;
 
+getAllInteractions:
+SELECT * FROM interaction
+ORDER BY timestamp DESC
+LIMIT :limit;
+
 insertInteraction:
 INSERT INTO interaction(type, moodEffect, timestamp)
 VALUES (?, ?, ?);

@@ -1,37 +1,40 @@
 package com.desktop.lumi.onboarding.presentation.composable
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desktop.lumi.onboarding.presentation.model.RelationshipType
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-private val SoftPink = Color(0xFFFFE5F1) // Very light pink
-private val SoftBlue = Color(0xFFE5F0FF) // Very light blue
-private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
+// Consistent Lumi Palette
+private val LumiBackground = Color(0xFFFAFAFA)
+private val LumiPrimary = Color(0xFF8E8CD8)
+private val LumiSurface = Color(0xFFFFFFFF)
+private val TextPrimary = Color(0xFF2D2D39)
+private val TextSecondary = Color(0xFF8A8A99)
 
 @Composable
 fun OnboardingRelationshipTypeScreen(
@@ -40,161 +43,186 @@ fun OnboardingRelationshipTypeScreen(
     onNext: () -> Unit,
     onBack: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp)
-            .padding(top = 60.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier.align(Alignment.Start)
-        ) {
-            Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+    Scaffold(
+        containerColor = LumiBackground,
+        topBar = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                LinearProgressIndicator(
+                    progress = { 0.66f }, // Step 2 of 3
+                    modifier = Modifier.fillMaxWidth(),
+                    color = LumiPrimary,
+                    trackColor = LumiPrimary.copy(alpha = 0.1f),
+                )
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = TextSecondary
+                        )
+                    }
+                }
+            }
+        },
+        bottomBar = {
+            // Floating Next Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+                    .padding(bottom = 16.dp)
+            ) {
+                Button(
+                    onClick = onNext,
+                    enabled = selectedType != null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = LumiPrimary,
+                        disabledContainerColor = Color.Gray.copy(alpha = 0.1f),
+                        contentColor = Color.White,
+                        disabledContentColor = TextSecondary.copy(alpha = 0.4f)
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 0.dp,
+                        pressedElevation = 2.dp
+                    )
+                ) {
+                    Text(
+                        text = "Continue",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (selectedType != null) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
+                    }
+                }
+            }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Title
-        Text(
-            text = "What best describes your relationship?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Subtitle
-        Text(
-            text = "This helps me tailor your reflections.",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF777777),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Relationship type options
-        RelationshipTypeOption(
-            type = RelationshipType.Dating,
-            displayText = "Dating",
-            isSelected = selectedType == RelationshipType.Dating,
-            onSelect = onSelectType
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        RelationshipTypeOption(
-            type = RelationshipType.Situationship,
-            displayText = "Situationship",
-            isSelected = selectedType == RelationshipType.Situationship,
-            onSelect = onSelectType
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        RelationshipTypeOption(
-            type = RelationshipType.Partner,
-            displayText = "Partner",
-            isSelected = selectedType == RelationshipType.Partner,
-            onSelect = onSelectType
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        RelationshipTypeOption(
-            type = RelationshipType.LongDistance,
-            displayText = "Long-distance",
-            isSelected = selectedType == RelationshipType.LongDistance,
-            onSelect = onSelectType
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Next Button
-        Button(
-            onClick = onNext,
-            enabled = selectedType != null,
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = PrimarySoft,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                contentColor = Color.White,
-                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-            ),
-            elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 2.dp,
-                disabledElevation = 0.dp
-            )
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Next",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
 
-        // Bottom padding for scroll
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 1. The Header
+            Text(
+                text = "How would you describe this bond?",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 40.sp
+                ),
+                color = TextPrimary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "No labels? No problem. Just pick what feels closest so we can tailor the insights.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // 2. The Grid Selection
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(RelationshipType.entries) { type ->
+                    RelationshipTypeCard(
+                        type = type,
+                        isSelected = selectedType == type,
+                        onSelect = onSelectType
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun RelationshipTypeOption(
+private fun RelationshipTypeCard(
     type: RelationshipType,
-    displayText: String,
     isSelected: Boolean,
     onSelect: (RelationshipType) -> Unit
 ) {
-    Box(
+    // Animations for selection
+    val backgroundColor by animateColorAsState(
+        if (isSelected) LumiPrimary.copy(alpha = 0.1f) else LumiSurface
+    )
+    val borderColor by animateColorAsState(
+        if (isSelected) LumiPrimary else Color.Transparent
+    )
+    val scale by animateFloatAsState(
+        if (isSelected) 1.02f else 1f
+    )
+    val elevation by animateDpAsState(
+        if (isSelected) 4.dp else 1.dp
+    )
+
+    // Data Mapping for Visuals
+    val (emoji, label) = when (type) {
+        RelationshipType.Dating -> "🥂" to "Dating"
+        RelationshipType.Situationship -> "🌀" to "Situationship"
+        RelationshipType.Partner -> "🏡" to "Partner"
+        RelationshipType.LongDistance -> "✈️" to "Long Distance"
+    }
+
+    Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .background(
-                color = if (isSelected) {
-                    PrimarySoft.copy(alpha = 0.12f)
-                } else {
-                    SoftPink.copy(alpha = 0.3f)
-                },
-                shape = RoundedCornerShape(16.dp)
-            )
-            .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) PrimarySoft else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clickable { onSelect(type) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
+            .aspectRatio(1f) // Square cards
+            .scale(scale)
+            .clickable { onSelect(type) },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(elevation),
+        border = androidx.compose.foundation.BorderStroke(2.dp, borderColor)
     ) {
-        Text(
-            text = displayText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = emoji,
+                fontSize = 48.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) LumiPrimary else TextPrimary
+            )
+        }
     }
 }
 
 @Preview
 @Composable
-fun PreviewOnboardingRelationshipTypeScreen() {
+fun PreviewRelationshipTypeScreen() {
     MaterialTheme {
         OnboardingRelationshipTypeScreen(
-            selectedType = null,
+            selectedType = RelationshipType.Situationship,
             onSelectType = {},
             onNext = {},
             onBack = {}

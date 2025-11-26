@@ -1,51 +1,48 @@
 package com.desktop.lumi.home.presentation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-private val SoftPink = Color(0xFFFFE5F1) // Very light pink
-private val SoftBlue = Color(0xFFE5F0FF) // Very light blue
-private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
-private val TextFieldBackground = Color(0xFFF8F8F8) // Very light gray
+// --- Consistently using the new palette ---
+private val LumiBackground = Color(0xFFFAFAFA)
+private val LumiSurface = Color(0xFFFFFFFF)
+private val LumiPrimary = Color(0xFF8E8CD8)
+private val LumiSecondary = Color(0xFFFFB7B2)
+private val TextPrimary = Color(0xFF2D2D39)
+private val TextSecondary = Color(0xFF8A8A99)
+private val InputBackground = Color(0xFFF2F2F7) // Softer gray for inputs
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyReflectionScreen(
-    mood: Int?,                       // null = not selected yet
+    mood: Int?, // null = not selected yet
     note: String,
     onMoodSelected: (Int) -> Unit,
     onNoteChange: (String) -> Unit,
@@ -54,226 +51,237 @@ fun DailyReflectionScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp)
-            .padding(top = 60.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        // Header Section
-        ReflectionHeader(onBack = onBack)
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Mood Selection Section
-        MoodSelectionSection(
-            selectedMood = mood,
-            onMoodSelected = onMoodSelected
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Optional Note Section
-        NoteInputSection(
-            note = note,
-            onNoteChange = onNoteChange
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Save Button
-        SaveButton(
-            enabled = mood != null,
-            onSave = onSave
-        )
-
-        // Bottom padding for scroll
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-@Composable
-private fun ReflectionHeader(
-    onBack: () -> Unit
-) {
-    Column {
-        // Back button and title row
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        color = PrimarySoft.copy(alpha = 0.12f),
-                        shape = CircleShape
-                    )
-                    .clickable { onBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "←",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = PrimarySoft
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = "Reflect on Today",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+    Scaffold(
+        containerColor = LumiBackground,
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = TextPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = LumiBackground)
             )
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(padding)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Subtitle
-        Text(
-            text = "How did today feel with them?",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF777777),
-            modifier = Modifier.padding(start = 48.dp) // Align with title text
-        )
+            // 1. The Big Question
+            Text(
+                text = "How did today feel?",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = TextPrimary,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Text(
+                text = "Be honest with yourself.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // 2. The Mood "Stage"
+            // We center the mood selection and make it the hero
+            MoodSelector(
+                selectedMood = mood,
+                onMoodSelected = onMoodSelected
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // 3. The Journal Area
+            JournalInput(
+                note = note,
+                onNoteChange = onNoteChange
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // 4. The Action
+            // We push this to the bottom of the content flow
+            SaveButton(
+                enabled = mood != null,
+                onSave = onSave
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
 @Composable
-private fun MoodSelectionSection(
+private fun MoodSelector(
     selectedMood: Int?,
     onMoodSelected: (Int) -> Unit
 ) {
-    Column {
-        Text(
-            text = "How are you feeling?",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth()
-        )
+    val moods = listOf(
+        1 to "😫", // Drained
+        2 to "😕", // Confused
+        3 to "😐", // Neutral
+        4 to "🙂", // Good
+        5 to "🥰"  // Loved
+    )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Mood emoji row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val moods = listOf(
-                1 to "😞",
-                2 to "😐",
-                3 to "🙂",
-                4 to "😊",
-                5 to "😍"
+    // Using a BoxWithConstraints or just Row to distribute
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        moods.forEach { (value, emoji) ->
+            MoodItem(
+                emoji = emoji,
+                isSelected = selectedMood == value,
+                isDimmed = selectedMood != null && selectedMood != value,
+                onClick = { onMoodSelected(value) }
             )
+        }
+    }
 
-            moods.forEach { (moodValue, emoji) ->
-                MoodEmojiButton(
-                    emoji = emoji,
-                    isSelected = selectedMood == moodValue,
-                    onClick = { onMoodSelected(moodValue) }
-                )
+    // Label under the selected mood (Optional context)
+    Box(modifier = Modifier.height(30.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+        if (selectedMood != null) {
+            val label = when(selectedMood) {
+                1 -> "Drained"
+                2 -> "Confused"
+                3 -> "Okay"
+                4 -> "Good"
+                5 -> "Loved"
+                else -> ""
             }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                color = LumiPrimary
+            )
         }
     }
 }
 
 @Composable
-private fun MoodEmojiButton(
+private fun MoodItem(
     emoji: String,
     isSelected: Boolean,
+    isDimmed: Boolean,
     onClick: () -> Unit
 ) {
-    // Scale animation for selected state
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.1f else 1.0f,
-        animationSpec = tween(durationMillis = 200),
-        label = "mood_scale"
+    // Spring animations for bouncy feel
+    val size by animateDpAsState(
+        targetValue = if (isSelected) 64.dp else 48.dp,
+        animationSpec = spring(dampingRatio = 0.6f)
+    )
+    val fontSize by animateFloatAsState(
+        targetValue = if (isSelected) 32f else 20f
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (isDimmed) 0.3f else 1f
+    )
+    val backgroundAlpha by animateFloatAsState(
+        targetValue = if (isSelected) 0.2f else 0f
     )
 
-    Box(
-        modifier = Modifier
-            .size(64.dp)
-            .scale(scale)
-            .background(
-                color = if (isSelected) {
-                    PrimarySoft.copy(alpha = 0.2f)
-                } else {
-                    Color.Transparent
-                },
-                shape = CircleShape
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .scale(scale = if (isSelected) 1.1f else 1f)
+                .shadow(
+                    elevation = if (isSelected) 8.dp else 0.dp,
+                    shape = CircleShape,
+                    spotColor = LumiPrimary.copy(alpha = 0.5f)
+                )
+                .background(
+                    color = if (isSelected) LumiSurface else Color.Transparent,
+                    shape = CircleShape
+                )
+                // The ring effect
+                .border(
+                    width = if (isSelected) 2.dp else 0.dp,
+                    color = if (isSelected) LumiPrimary else Color.Transparent,
+                    shape = CircleShape
+                )
+                .clip(CircleShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null // Disable default ripple for custom feel
+                ) { onClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = emoji,
+                fontSize = fontSize.sp,
+                color = Color.Unspecified.copy(alpha = alpha)
             )
-            .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) PrimarySoft else Color.Transparent,
-                shape = CircleShape
-            )
-            .clip(CircleShape)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = emoji,
-            fontSize = 28.sp,
-            color = if (isSelected) {
-                Color.Unspecified
-            } else {
-                Color.Unspecified.copy(alpha = 0.7f)
-            }
-        )
+        }
     }
 }
 
 @Composable
-private fun NoteInputSection(
+private fun JournalInput(
     note: String,
     onNoteChange: (String) -> Unit
 ) {
     Column {
         Text(
-            text = "Add a note (optional)",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth()
+            text = "Journal (Optional)",
+            style = MaterialTheme.typography.labelLarge,
+            color = TextSecondary,
+            fontWeight = FontWeight.SemiBold
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = note,
-            onValueChange = onNoteChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            placeholder = {
-                Text(
-                    text = "Write how today felt…",
-                    fontSize = 14.sp,
-                    color = Color(0xFF999999)
-                )
-            },
+        // A "Paper" like card for typing
+        Card(
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = TextFieldBackground,
-                unfocusedContainerColor = TextFieldBackground,
-                focusedBorderColor = PrimarySoft.copy(alpha = 0.5f),
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = PrimarySoft
-            ),
-            maxLines = 5,
-            singleLine = false
-        )
+            colors = CardDefaults.cardColors(containerColor = InputBackground),
+            elevation = CardDefaults.cardElevation(0.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            TextField(
+                value = note,
+                onValueChange = onNoteChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .padding(4.dp),
+                placeholder = {
+                    Text(
+                        "What happened today? Vent here...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary.copy(alpha = 0.7f)
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
+        }
     }
 }
 
@@ -282,57 +290,46 @@ private fun SaveButton(
     enabled: Boolean,
     onSave: () -> Unit
 ) {
-    Button(
-        onClick = onSave,
-        enabled = enabled,
+    // Gradient button for premium feel
+    val brush = Brush.horizontalGradient(
+        colors = listOf(LumiPrimary, Color(0xFFA5A3E6))
+    )
+
+    val alphaa by animateFloatAsState(targetValue = if (enabled) 1f else 0.5f)
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = PrimarySoft,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-            contentColor = Color.White,
-            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 2.dp,
-            disabledElevation = 0.dp
-        )
+            .height(56.dp)
+            .shadow(
+                elevation = if (enabled) 8.dp else 0.dp,
+                shape = RoundedCornerShape(28.dp),
+                spotColor = LumiPrimary.copy(alpha = 0.4f)
+            )
+            .clip(RoundedCornerShape(28.dp))
+            .background(brush = brush) // Only apply alpha to color, not structure? Actually simpler to just use button colors if solid
+            .background(if (enabled) LumiPrimary else Color.Gray.copy(alpha = 0.2f)) // Fallback logic
+            .clickable(enabled = enabled, onClick = onSave),
+        contentAlignment = Alignment.Center
     ) {
+        // We use a Box instead of Button to control the gradient background easily
+        // But for accessibility, Button is better. Let's wrap content.
+
         Text(
-            text = "Save Reflection",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-
-
-@Preview
-@Composable
-fun PreviewDailyReflectionScreenEmpty() {
-    MaterialTheme {
-        DailyReflectionScreen(
-            mood = null,
-            note = "",
-            onMoodSelected = {},
-            onNoteChange = {},
-            onSave = {},
-            onBack = {}
+            text = "Save Entry",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White.copy(alpha = if (enabled) 1f else 0.7f)
         )
     }
 }
 
 @Preview
 @Composable
-fun PreviewDailyReflectionScreenFilled() {
+fun PreviewNewReflection() {
     MaterialTheme {
         DailyReflectionScreen(
             mood = 4,
-            note = "Had a wonderful day together. We went for a walk and talked about our future plans.",
+            note = "I felt pretty good actually...",
             onMoodSelected = {},
             onNoteChange = {},
             onSave = {},

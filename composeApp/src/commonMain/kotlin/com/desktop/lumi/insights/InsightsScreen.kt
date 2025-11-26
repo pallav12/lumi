@@ -1,39 +1,46 @@
 package com.desktop.lumi.insights
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.SentimentDissatisfied
+import androidx.compose.material.icons.rounded.SentimentSatisfied
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-private val SoftPink = Color(0xFFFFE5F1) // Very light pink
-private val SoftBlue = Color(0xFFE5F0FF) // Very light blue
-private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
-private val SoftGreen = Color(0xFFE8F5E8) // Very light green
+// --- Palette (Consistent with App) ---
+private val LumiBackground = Color(0xFFFAFAFA)
+private val LumiSurface = Color(0xFFFFFFFF)
+private val LumiPrimary = Color(0xFF8E8CD8)
+private val TextPrimary = Color(0xFF2D2D39)
+private val TextSecondary = Color(0xFF8A8A99)
 
+// Insight Specific Colors
+private val PositiveGreen = Color(0xFF98D8AA)
+private val NegativeRed = Color(0xFFFF9E9E)
+private val InsightGold = Color(0xFFF4D35E)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsightsScreen(
     insights: List<String>,
@@ -41,88 +48,74 @@ fun InsightsScreen(
     negativeCount: Int,
     onBack: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-                .padding(top = 48.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Text("←", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
-            }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            Column {
-                Text(
-                    text = "Insights",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Your emotional patterns this week",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF777777)
-                )
-            }
+    Scaffold(
+        containerColor = LumiBackground,
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = TextPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = LumiBackground)
+            )
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+        ) {
+            // 1. Header with "Painkiller" Copywriting
+            Text(
+                text = "Weekly Rhythm",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = TextPrimary
+            )
+            Text(
+                text = "Understanding your emotional patterns.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Content
-        if (insights.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+            if (insights.isEmpty() && positiveCount == 0 && negativeCount == 0) {
+                EmptyState()
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Text(
-                        text = "No insights yet",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Reflect for a few days to start seeing patterns",
-                        fontSize = 14.sp,
-                        color = Color(0xFF999999)
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                // Weekly Summary Card
-                item {
-                    WeeklySummaryCard(
-                        positiveCount = positiveCount,
-                        negativeCount = negativeCount
-                    )
-                }
+                    // 2. The "Vibe Check" Summary Cards
+                    item {
+                        SummarySection(positiveCount, negativeCount)
+                    }
 
-                // Insight Cards
-                items(insights) { insight ->
-                    InsightCard(insight = insight)
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Key Patterns",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                    }
+
+                    // 3. Wisdom Cards
+                    items(insights) { insight ->
+                        InsightCard(insight = insight)
+                    }
                 }
             }
         }
@@ -130,67 +123,79 @@ fun InsightsScreen(
 }
 
 @Composable
-private fun WeeklySummaryCard(
-    positiveCount: Int,
-    negativeCount: Int
+private fun SummarySection(positiveCount: Int, negativeCount: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Positive Card
+        SummaryCard(
+            title = "Uplifting",
+            count = positiveCount,
+            icon = Icons.Rounded.SentimentSatisfied,
+            color = PositiveGreen,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Negative Card
+        SummaryCard(
+            title = "Draining",
+            count = negativeCount,
+            icon = Icons.Rounded.SentimentDissatisfied,
+            color = NegativeRed,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun SummaryCard(
+    title: String,
+    count: Int,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.height(110.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = PrimarySoft.copy(alpha = 0.12f)
+            containerColor = color.copy(alpha = 0.15f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Text(
-                text = "Weekly Overview",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Positive interactions
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "👍",
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(end = 12.dp)
-                )
-                Text(
-                    text = "Positive interactions: $positiveCount",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Column(modifier = Modifier.align(Alignment.TopStart)) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(LumiSurface, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = color.copy(alpha = 0.8f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Negative interactions
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+
+            Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 Text(
-                    text = "👎",
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(end = 12.dp)
+                    text = "$count",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
                 )
                 Text(
-                    text = "Negative interactions: $negativeCount",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary.copy(alpha = 0.8f)
                 )
             }
         }
@@ -199,35 +204,91 @@ private fun WeeklySummaryCard(
 
 @Composable
 private fun InsightCard(insight: String) {
+    // Subtle Gradient Background for "Wisdom" feel
+    val brush = Brush.linearGradient(
+        colors = listOf(
+            LumiSurface,
+            LumiPrimary.copy(alpha = 0.05f)
+        )
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = PrimarySoft.copy(alpha = 0.08f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .background(brush)
                 .padding(20.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Light bulb indicator
-            Text(
-                text = "💡",
-                fontSize = 24.sp,
-                modifier = Modifier.padding(end = 16.dp)
+            // Icon Indicator
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(InsightGold.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFFC7A005), // Darker Gold
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = "Observation",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextSecondary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = insight,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextPrimary,
+                    lineHeight = 22.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp), // Visual centering
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Rounded.Block,
+                contentDescription = null,
+                tint = TextSecondary.copy(alpha = 0.3f),
+                modifier = Modifier.size(64.dp)
             )
-            
-            // Insight text
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = insight,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 22.sp,
-                modifier = Modifier.weight(1f)
+                text = "No patterns found yet",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Log a few interactions to unlock insights.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary.copy(alpha = 0.7f)
             )
         }
     }
@@ -239,13 +300,11 @@ fun PreviewInsightsScreen() {
     MaterialTheme {
         InsightsScreen(
             insights = listOf(
-                "Calls brought you the most positivity this week.",
-                "You tend to feel drained after late-night texting.",
-                "Your mood was more stable on days you met in person.",
-                "You had 3 emotionally uplifting moments this week."
+                "Calls brought you the most positivity this week. You seem to connect better vocally.",
+                "You tend to feel drained after late-night texting sessions.",
             ),
-            positiveCount = 8,
-            negativeCount = 3,
+            positiveCount = 12,
+            negativeCount = 4,
             onBack = {}
         )
     }
@@ -263,4 +322,3 @@ fun PreviewInsightsScreenEmpty() {
         )
     }
 }
-

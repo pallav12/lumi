@@ -2,42 +2,27 @@ package com.desktop.lumi.home.presentation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,19 +30,16 @@ import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.instantmirror.InstantInsightBottomSheet
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-// UI Models
-//data class ReflectionUiState(val mood: Int, val note: String?)
-//data class WeeklyTrendUiState(
-//    val moodPoints: List<Int>,    // last 7 days mood (1-5)
-//    val positiveCount: Int,
-//    val negativeCount: Int
-//)
-
-private val SoftPink = Color(0xFFFFE5F1) // Very light pink
-private val SoftBlue = Color(0xFFE5F0FF) // Very light blue
-private val PrimarySoft = Color(0xFFB8A4D9) // Soft lavender/pastel purple
-private val SoftGreen = Color(0xFFE8F5E8) // Very light green
-private val SoftOrange = Color(0xFFFFF4E6) // Very light orange
+// --- New Premium Palette ---
+// Using darker text for readability and softer backgrounds for comfort
+private val LumiBackground = Color(0xFFFAFAFA) // Off-white, easier on eyes than #FFFFFF
+private val LumiSurface = Color(0xFFFFFFFF)
+private val LumiPrimary = Color(0xFF8E8CD8) // Deep Lavender
+private val LumiSecondary = Color(0xFFFFB7B2) // Soft Coral
+private val TextPrimary = Color(0xFF2D2D39)
+private val TextSecondary = Color(0xFF8A8A99)
+private val PositiveGreen = Color(0xFF98D8AA)
+private val NegativeRed = Color(0xFFFF9E9E)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,181 +50,181 @@ fun HomeScreen(
     onOpenInsights: () -> Unit,
     onOpenTimeline: () -> Unit,
     onOpenSettings: () -> Unit,
-    onDismissInsight: ()-> Unit
+    onDismissInsight: () -> Unit
 ) {
     Scaffold(
+        containerColor = LumiBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Hi, ${uiState.personName}") },
+                title = {
+                    Text(
+                        "Lumi",
+                        fontFamily = FontFamily.Serif, // Branding touch
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = LumiBackground),
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextSecondary)
                     }
                 }
             )
-        }) {
+        }
+    ) { padding ->
         val scrollState = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp)
-                .padding(top = 60.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
-        ) {
 
-            // Header
-            GreetingHeader(
-                personName = uiState.personName,
-                hasReflection = uiState.todayReflection != null
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(padding)
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Today Card
-            TodayReflectionCard(
-                todayReflection = uiState.todayReflection,
-                onLogReflection = onLogReflection
-            )
+                // 1. Personal Greeting (Large & Warm)
+                GreetingSection(name = uiState.personName)
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // Quick Actions
-            QuickActions(
-                onLogInteraction = onLogInteraction,
-                onOpenInsights = onOpenInsights
-            )
+                // 2. The Main "Action" Card (Reflection)
+                // If they haven't reflected, this invites them. If they have, it celebrates them.
+                DailyReflectionCard(
+                    reflection = uiState.todayReflection,
+                    onClick = onLogReflection
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            // Weekly Trend Section
-            WeeklyTrendSection(
-                weeklyTrend = uiState.weeklyTrend
-            )
+                // 3. Emotional Trend Graph (The "Vitals")
+                // Moved up because visuals engage users
+                WeeklyVitalsSection(
+                    weeklyTrend = uiState.weeklyTrend,
+                    onOpenTimeline = onOpenTimeline
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            // Timeline Call to Action
-            TimelineCallToAction(
-                onOpenTimeline = onOpenTimeline
-            )
+                // 4. Action Buttons (Grid Layout)
+                ActionGrid(
+                    onLogInteraction = onLogInteraction,
+                    onOpenInsights = onOpenInsights
+                )
 
-            // Bottom padding for scroll
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(48.dp)) // Bottom breathing room
+            }
 
+            // Bottom Sheet for the "Painkiller" Feature
             InstantInsightBottomSheet(
                 insight = uiState.instantInsight,
                 onDismiss = onDismissInsight
             )
         }
-
     }
-
 }
 
 @Composable
-private fun GreetingHeader(
-    personName: String,
-    hasReflection: Boolean
-) {
-    Column {
+private fun GreetingSection(name: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "How did today feel with $personName?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth()
+            text = "Good Morning,",
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextSecondary
         )
-
-        if (!hasReflection) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Take a moment to reflect today.",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF777777),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        Text(
+            text = "How are things with $name?",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = FontFamily.Serif,
+                fontWeight = FontWeight.SemiBold
+            ),
+            color = TextPrimary
+        )
     }
 }
 
 @Composable
-private fun TodayReflectionCard(
-    todayReflection: HomeViewModel.ReflectionUiState?,
-    onLogReflection: () -> Unit
+private fun DailyReflectionCard(
+    reflection: HomeViewModel.ReflectionUiState?,
+    onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = PrimarySoft.copy(alpha = 0.12f)
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
-    ) {
-        Column(
+    if (reflection == null) {
+        // Empty State: Inviting, Dashed Border
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .border(
+                    width = 2.dp,
+                    color = LumiPrimary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(24.dp),
+                    // Dash effect would go here with PathEffect, simple border for now
+                )
+                .background(LumiPrimary.copy(alpha = 0.05f))
+                .clickable { onClick() }
                 .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center
         ) {
-            if (todayReflection == null) {
-                // No reflection yet
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = LumiPrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "No reflection yet",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "Log Today's Mood",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = LumiPrimary
+                )
+                Text(
+                    text = "Track the ups and downs",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+        }
+    } else {
+        // Filled State: Solid, Comforting
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = LumiSurface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Large Emoji
+                Text(
+                    text = getMoodEmoji(reflection.mood),
+                    fontSize = 42.sp
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                FilledTonalButton(
-                    onClick = onLogReflection,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+                Column {
                     Text(
-                        text = "Log Reflection",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        text = "Today's Reflection",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = TextSecondary.copy(alpha = 0.8f)
                     )
-                }
-            } else {
-                // Show today's reflection
-                Text(
-                    text = getMoodEmoji(todayReflection.mood),
-                    fontSize = 48.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                todayReflection.note?.let { note ->
-                    if (note.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "\"$note\"",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Color(0xFF777777),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FilledTonalButton(
-                    onClick = onLogReflection,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "View Reflection",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        text = if (reflection.note.isNullOrBlank()) "No notes added." else reflection.note,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary,
+                        maxLines = 2
                     )
                 }
             }
@@ -251,7 +233,82 @@ private fun TodayReflectionCard(
 }
 
 @Composable
-private fun QuickActions(
+private fun WeeklyVitalsSection(
+    weeklyTrend: HomeViewModel.WeeklyTrendUiState,
+    onOpenTimeline: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Emotional Rhythm",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            TextButton(onClick = onOpenTimeline) {
+                Text("See History", color = LumiPrimary)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = LumiSurface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            modifier = Modifier.border(1.dp, Color.Black.copy(0.05f), RoundedCornerShape(24.dp))
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+
+                // The Graph
+                SmoothMoodGraph(
+                    moodPoints = weeklyTrend.moodPoints,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Stats Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatPill(weeklyTrend.positiveCount, "Positive", PositiveGreen)
+                    StatPill(weeklyTrend.negativeCount, "Drained", NegativeRed)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatPill(count: Int, label: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(color.copy(alpha = 0.2f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "$count",
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+    }
+}
+
+@Composable
+private fun ActionGrid(
     onLogInteraction: () -> Unit,
     onOpenInsights: () -> Unit
 ) {
@@ -259,255 +316,169 @@ private fun QuickActions(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        ElevatedButton(
+        ActionButton(
+            title = "Log\nInteraction",
+            icon = Icons.Default.Add,
+            color = LumiPrimary,
             onClick = onLogInteraction,
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "Log Interaction",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
+            modifier = Modifier.weight(1f)
+        )
 
-        ElevatedButton(
+        ActionButton(
+            title = "Weekly\nInsights",
+            icon = Icons.Rounded.Insights, // Requires extended icons or use default
+            color = LumiSecondary,
             onClick = onOpenInsights,
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "View Insights",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
 @Composable
-private fun WeeklyTrendSection(
-    weeklyTrend: HomeViewModel.WeeklyTrendUiState
+private fun ActionButton(
+    title: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column {
-        Text(
-            text = "This Week",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Mini mood graph
-        MoodGraph(
-            moodPoints = weeklyTrend.moodPoints,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Interaction counts
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            InteractionCountItem(
-                count = weeklyTrend.positiveCount,
-                label = "Positive interactions",
-                color = SoftGreen
-            )
-
-            InteractionCountItem(
-                count = weeklyTrend.negativeCount,
-                label = "Negative interactions",
-                color = SoftOrange
-            )
-        }
-    }
-}
-
-@Composable
-private fun InteractionCountItem(
-    count: Int,
-    label: String,
-    color: Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Card(
+        modifier = modifier
+            .height(100.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(12.dp)
-                .background(
-                    color = color,
-                    shape = RoundedCornerShape(6.dp)
-                )
-        )
-
-        Column {
-            Text(
-                text = "$count",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(28.dp)
             )
             Text(
-                text = label,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color(0xFF777777)
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                modifier = Modifier.align(Alignment.BottomStart)
             )
         }
     }
 }
 
 @Composable
-private fun MoodGraph(
+private fun SmoothMoodGraph(
     moodPoints: List<Int>,
     modifier: Modifier = Modifier
 ) {
-    val strokeColor = PrimarySoft.copy(alpha = 0.7f)
+    // Gradient definition
+    val brush = Brush.verticalGradient(
+        colors = listOf(LumiPrimary.copy(alpha = 0.4f), LumiPrimary.copy(alpha = 0.0f))
+    )
 
-    Box(
-        modifier = modifier
-            .background(
-                color = SoftBlue.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(16.dp)
-    ) {
-        if (moodPoints.isEmpty()) {
-            // Empty state
-            Text(
-                text = "No data yet",
-                fontSize = 12.sp,
-                color = Color(0xFF999999),
-                modifier = Modifier.align(Alignment.Center)
-            )
-        } else {
-            Canvas(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                val width = size.width
-                val height = size.height
-                val pointSpacing = width / (moodPoints.size - 1).coerceAtLeast(1)
+    Canvas(modifier = modifier) {
+        if (moodPoints.isEmpty()) return@Canvas
 
-                // Draw connecting lines
-                val path = Path()
-                moodPoints.forEachIndexed { index, mood ->
-                    val x = index * pointSpacing
-                    val y = height - ((mood - 1) / 4f) * height // mood 1-5 mapped to height
+        val w = size.width
+        val h = size.height
+        val spacing = w / (moodPoints.size - 1).coerceAtLeast(1)
 
-                    if (index == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        path.lineTo(x, y)
-                    }
-                }
+        val path = Path()
 
-                drawPath(
-                    path = path,
-                    color = strokeColor,
-                    style = Stroke(
-                        width = 3.dp.toPx(),
-                        cap = StrokeCap.Round
-                    )
-                )
+        // Logic to draw smooth bezier curves between points
+        moodPoints.forEachIndexed { index, mood ->
+            // Map mood (1-5) to height (inverted, 5 is high)
+            // 5 -> 0, 1 -> h
+            val x = index * spacing
+            val y = h - ((mood - 1) / 4f) * h
 
-                // Draw points
-                moodPoints.forEachIndexed { index, mood ->
-                    val x = index * pointSpacing
-                    val y = height - ((mood - 1) / 4f) * height
+            if (index == 0) {
+                path.moveTo(x, y)
+            } else {
+                // Calculate control points for smooth curve
+                val prevX = (index - 1) * spacing
+                val prevY = h - ((moodPoints[index - 1] - 1) / 4f) * h
 
-                    drawCircle(
-                        color = strokeColor,
-                        radius = 4.dp.toPx(),
-                        center = Offset(x, y)
-                    )
-                }
+                // Control points placed halfway between X's, but maintaining Y trends
+                val controlX1 = prevX + (x - prevX) / 2
+                val controlX2 = prevX + (x - prevX) / 2
+
+                path.cubicTo(controlX1, prevY, controlX2, y, x, y)
             }
         }
-    }
-}
 
-@Composable
-private fun TimelineCallToAction(
-    onOpenTimeline: () -> Unit
-) {
-    TextButton(
-        onClick = onOpenTimeline,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Open Timeline →",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = PrimarySoft
+        // Draw the fill
+        val fillPath = Path().apply {
+            addPath(path)
+            lineTo(w, h)
+            lineTo(0f, h)
+            close()
+        }
+
+        drawPath(
+            path = fillPath,
+            brush = brush
         )
+
+        // Draw the stroke
+        drawPath(
+            path = path,
+            color = LumiPrimary,
+            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+        )
+
+        // Draw Dots
+        moodPoints.forEachIndexed { index, mood ->
+            val x = index * spacing
+            val y = h - ((mood - 1) / 4f) * h
+            drawCircle(
+                color = LumiSurface,
+                radius = 6.dp.toPx(),
+                center = Offset(x, y)
+            )
+            drawCircle(
+                color = LumiPrimary,
+                radius = 4.dp.toPx(),
+                center = Offset(x, y)
+            )
+        }
     }
 }
 
 private fun getMoodEmoji(mood: Int): String {
     return when (mood) {
-        1 -> "😢"
+        1 -> "😫"
         2 -> "😕"
         3 -> "😐"
-        4 -> "😊"
-        5 -> "😍"
+        4 -> "🙂"
+        5 -> "🥰"
         else -> "😐"
     }
 }
 
 @Preview
 @Composable
-fun PreviewHomeScreenNoReflection() {
-    MaterialTheme {
-        HomeScreen(
-            uiState = HomeViewModel.HomeUiState("Alex",
-            todayReflection = null,
-            weeklyTrend = HomeViewModel.WeeklyTrendUiState(
-                moodPoints = listOf(3, 4, 2, 5, 3, 4, 5),
-                positiveCount = 12,
-                negativeCount = 3
-            )),
-            onLogReflection = {},
-            onLogInteraction = {},
-            onOpenInsights = {},
-            onOpenTimeline = {},
-            onOpenSettings = {},
-            onDismissInsight = {}
-
-        )
-    }
-}
-
-@Preview
-@Composable
-fun PreviewHomeScreenWithReflection() {
+fun NewHomePreview() {
     MaterialTheme {
         HomeScreen(
             uiState = HomeViewModel.HomeUiState(
-                "Jordan",
-                todayReflection = HomeViewModel.ReflectionUiState(
-                    mood = 4,
-                    note = "Had a wonderful dinner together and talked about our future plans."
-                ),
+                personName = "Alex",
+                todayReflection = null,
                 weeklyTrend = HomeViewModel.WeeklyTrendUiState(
-                    moodPoints = listOf(3, 4, 2, 5, 3, 4, 4),
-                    positiveCount = 8,
-                    negativeCount = 2
-                )),
-                onLogReflection = {},
-                onLogInteraction = {},
-                onOpenInsights = {},
-                onOpenTimeline = {},
-                onOpenSettings = {},
-                onDismissInsight = {}
-            )
+                    moodPoints = listOf(3, 2, 4, 3, 5, 4, 2),
+                    positiveCount = 12,
+                    negativeCount = 4
+                )
+            ),
+            {}, {}, {}, {}, {}, {}
+        )
     }
 }

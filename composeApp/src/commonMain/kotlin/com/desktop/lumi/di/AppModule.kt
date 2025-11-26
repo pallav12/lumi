@@ -15,8 +15,8 @@ import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
 import com.desktop.lumi.home.presentation.ReflectionViewModel
 import com.desktop.lumi.insights.InsightsViewModel
+import com.desktop.lumi.instantmirror.InsightEngine
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
-import com.desktop.lumi.settings.SettingsViewModel
 
 class AppModule(
     driverFactory: DatabaseDriverFactory,
@@ -29,13 +29,15 @@ class AppModule(
     val reflectionRepository: ReflectionRepository = ReflectionRepositoryImpl(database)
     val interactionRepository: InteractionRepository = InteractionRepositoryImpl(database)
     val insightsRepository: InsightsRepository = InsightsRepositoryImpl(reflectionRepository)
+    val insightsEngine = InsightEngine()
 
     // ViewModels
     fun provideHomeViewModel() = HomeViewModel(
         personRepository,
         insightsRepository,
         reflectionRepository,
-        interactionRepository
+        interactionRepository,
+        insightsEngine
     )
 
     fun provideOnboardingViewModel() = OnboardingViewModel(

@@ -4,9 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desktop.lumi.domain.model.Interaction
 import com.desktop.lumi.domain.repository.InteractionRepository
-import com.desktop.lumi.instantmirror.InstantInsight
-import com.desktop.lumi.instantmirror.MessageGenerator
-import com.desktop.lumi.instantmirror.PatternMatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

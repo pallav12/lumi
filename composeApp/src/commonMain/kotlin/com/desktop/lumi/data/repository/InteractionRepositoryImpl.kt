@@ -48,5 +48,18 @@ class InteractionRepositoryImpl(
                 )
             }
     }
-}
 
+    override suspend fun getAllInteractions(limit: Int): List<Interaction> {
+        return db.interactionQueries
+            .getAllInteractions(limit.toLong())
+            .executeAsList()
+            .map {
+                Interaction(
+                    id = it.id,
+                    type = it.type,
+                    moodEffect = it.moodEffect.toInt(),
+                    timestamp = it.timestamp
+                )
+            }
+    }
+}

@@ -108,7 +108,7 @@ fun AppNavHost(
         Screen.Interaction -> {
             val state = interactionViewModel.uiState.collectAsStateWithLifecycle().value
             InteractionLogScreen(
-                selectedType = state,
+                selectedType = state.type,
                 selectedMoodEffect = when (state.moodEffect) {
                     1 -> MoodEffect.Better
                     0 -> MoodEffect.Same

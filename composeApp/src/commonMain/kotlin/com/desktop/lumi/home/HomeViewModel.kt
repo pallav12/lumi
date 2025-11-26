@@ -3,14 +3,15 @@ package com.desktop.lumi.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desktop.lumi.common.Screen
+import com.desktop.lumi.domain.model.Interaction
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
 import com.desktop.lumi.domain.repository.PersonRepository
 import com.desktop.lumi.domain.repository.ReflectionRepository
 import com.desktop.lumi.home.presentation.InteractionType
+import com.desktop.lumi.instantmirror.InsightEngine
 import com.desktop.lumi.instantmirror.InstantInsight
 import com.desktop.lumi.instantmirror.MessageGenerator
-import com.desktop.lumi.instantmirror.PatternMatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.take
@@ -21,7 +22,8 @@ class HomeViewModel(
     private val personRepository: PersonRepository,
     private val insightsRepository: InsightsRepository,
     private val reflectionRepository: ReflectionRepository,
-    private val interactionRepository: InteractionRepository
+    private val interactionRepository: InteractionRepository,
+    private val insightEngine: InsightEngine
 ) : ViewModel() {
 
     private val _currentScreen = MutableStateFlow<Screen>(Screen.OnboardingName())
@@ -41,18 +43,15 @@ class HomeViewModel(
         _uiState.update { it.copy(instantInsight = null) }
     }
 
-    fun showInstantInsight(interactionType: InteractionType?) = viewModelScope.launch {
-        if (interactionType == null) {
-            return@launch
-        }
-        val recent = interactionRepository.getRecentInteractionsOfType(interactionType.name)
+    fun showInstantInsight(currentInteraction: InteractionType?) = viewModelScope.launch {
+        if (currentInteraction == null) return@launch
 
-        val match = PatternMatcher.detectInteractionPattern(recent)
+        val history = interactionRepository.getAllInteractions(limit = 30)
 
-        // Generate user-facing insight
+        val match = insightEngine.analyze(currentInteraction, history)
+
         val insight = MessageGenerator.generateFor(match)
 
-        // Display insight
         _uiState.update { it.copy(instantInsight = insight) }
     }
 
