@@ -2,6 +2,7 @@ package com.desktop.lumi.common
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
 import com.desktop.lumi.home.presentation.ReflectionViewModel
@@ -18,7 +19,9 @@ fun App(
     reflectionViewModel: ReflectionViewModel,
     interactionViewModel: InteractionViewModel,
     insightsViewModel: InsightsViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    sosViewModel: SosViewModel,
+    onRequestPermission: () -> Unit,
 ) {
     MaterialTheme {
         AppNavHost(
@@ -27,7 +30,9 @@ fun App(
             reflectionViewModel = reflectionViewModel,
             interactionViewModel = interactionViewModel,
             insightsViewModel = insightsViewModel,
-            settingsViewModel = settingsViewModel
+            settingsViewModel = settingsViewModel,
+            sosViewModel = sosViewModel,
+            onRequestPermission = onRequestPermission,
         )
     }
 }

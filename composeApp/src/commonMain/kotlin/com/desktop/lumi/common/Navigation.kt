@@ -11,6 +11,7 @@ sealed class Screen {
     data object Timeline : Screen()
     data object Insights : Screen()
     data object Settings : Screen()
+    data object SOS : Screen()
 }
 
 

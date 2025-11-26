@@ -7,6 +7,7 @@ import com.desktop.lumi.data.repository.ReflectionRepositoryImpl
 import com.desktop.lumi.db.AppDatabase
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
+import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
 import com.desktop.lumi.domain.repository.PersonRepository
@@ -49,6 +50,7 @@ class AppModule(
 
     fun provideInteractionViewModel() = InteractionViewModel(interactionRepository)
 
+    fun provideSoSViewModel() = SosViewModel()
     fun provideInsightsViewModel() =
         InsightsViewModel(insightsRepository, reflectionRepository, interactionRepository)
 }

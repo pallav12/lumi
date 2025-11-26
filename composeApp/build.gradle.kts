@@ -69,8 +69,8 @@ android {
         applicationId = "com.desktop.lumi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "2.0"
     }
 
     packaging {

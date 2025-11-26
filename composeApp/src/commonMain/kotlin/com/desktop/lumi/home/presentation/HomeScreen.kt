@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +41,7 @@ private val TextPrimary = Color(0xFF2D2D39)
 private val TextSecondary = Color(0xFF8A8A99)
 private val PositiveGreen = Color(0xFF98D8AA)
 private val NegativeRed = Color(0xFFFF9E9E)
+private val SOSColor = Color(0xFFE57373) // Soft Red for SOS
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +52,8 @@ fun HomeScreen(
     onOpenInsights: () -> Unit,
     onOpenTimeline: () -> Unit,
     onOpenSettings: () -> Unit,
-    onDismissInsight: () -> Unit
+    onDismissInsight: () -> Unit,
+    onOpenSOS: () -> Unit // ⬅ NEW: Callback for SOS
 ) {
     Scaffold(
         containerColor = LumiBackground,
@@ -92,8 +95,10 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 2. The Main "Action" Card (Reflection)
-                // If they haven't reflected, this invites them. If they have, it celebrates them.
+                SOSButton(onClick = onOpenSOS)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 DailyReflectionCard(
                     reflection = uiState.todayReflection,
                     onClick = onLogReflection
@@ -101,7 +106,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 3. Emotional Trend Graph (The "Vitals")
+                // 4. Emotional Trend Graph (The "Vitals")
                 // Moved up because visuals engage users
                 WeeklyVitalsSection(
                     weeklyTrend = uiState.weeklyTrend,
@@ -110,7 +115,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 4. Action Buttons (Grid Layout)
+                // 5. Action Buttons (Grid Layout)
                 ActionGrid(
                     onLogInteraction = onLogInteraction,
                     onOpenInsights = onOpenInsights
@@ -143,6 +148,35 @@ private fun GreetingSection(name: String) {
                 fontWeight = FontWeight.SemiBold
             ),
             color = TextPrimary
+        )
+    }
+}
+
+@Composable
+private fun SOSButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        shape = RoundedCornerShape(25.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = SOSColor.copy(alpha = 0.1f),
+            contentColor = SOSColor
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SOSColor.copy(alpha = 0.3f))
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Spa, // Calming icon
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "I'm Spiraling / Need Grounding",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
@@ -326,7 +360,7 @@ private fun ActionGrid(
 
         ActionButton(
             title = "Weekly\nInsights",
-            icon = Icons.Rounded.Insights, // Requires extended icons or use default
+            icon = Icons.Rounded.Insights,
             color = LumiSecondary,
             onClick = onOpenInsights,
             modifier = Modifier.weight(1f)
@@ -478,7 +512,7 @@ fun NewHomePreview() {
                     negativeCount = 4
                 )
             ),
-            {}, {}, {}, {}, {}, {}
+            {}, {}, {}, {}, {}, {}, {}
         )
     }
 }

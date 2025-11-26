@@ -13,12 +13,11 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 data class OnboardingUiState(
     val name: String = "",
     val relationshipType: RelationshipType? = null,
-    val reminderHour: Int = 8,
-    val reminderMinute: Int = 30
+    val reminderHour: Int = 20, // Default to 8 PM
+    val reminderMinute: Int = 0
 )
 
 class OnboardingViewModel(
@@ -30,9 +29,22 @@ class OnboardingViewModel(
     val uiState: StateFlow<OnboardingUiState> = _uiState
 
     init {
+        // Pre-load data if user is editing settings
         viewModelScope.launch {
-            repo.getPerson().take(1).first()?.let {
-                loadExistingPerson(it)
+            val existingPerson = repo.getPerson().take(1).first()
+            if (existingPerson != null) {
+                _uiState.update {
+                    it.copy(
+                        name = existingPerson.name,
+                        relationshipType = try {
+                            RelationshipType.valueOf(existingPerson.relationshipType)
+                        } catch (e: Exception) {
+                            null // Fallback if enum changed
+                        },
+                        reminderHour = existingPerson.reminderHour.toInt(),
+                        reminderMinute = existingPerson.reminderMinute.toInt()
+                    )
+                }
             }
         }
     }
@@ -41,20 +53,11 @@ class OnboardingViewModel(
         _uiState.update { it.copy(name = name) }
     }
 
-    fun loadExistingPerson(person: Person) {
-        _uiState.value = OnboardingUiState(
-            name = person.name,
-            relationshipType = RelationshipType.valueOf(person.relationshipType),
-            reminderHour = person.reminderHour.toInt(),
-            reminderMinute = person.reminderMinute.toInt()
-        )
+    fun onRelationshipTypeSelect(type: RelationshipType) {
+        _uiState.update { it.copy(relationshipType = type) }
     }
 
-    fun onRelationshipTypeChange(relationshipType: RelationshipType) {
-        _uiState.update { it.copy(relationshipType = relationshipType) }
-    }
-
-    fun onReminderTimeChange(hour: Int, minute: Int) {
+    fun onTimeChange(hour: Int, minute: Int) {
         _uiState.update {
             it.copy(
                 reminderHour = hour,
@@ -67,22 +70,28 @@ class OnboardingViewModel(
         val state = _uiState.value
 
         viewModelScope.launch {
+            // 1. Save to Database
             repo.savePerson(
                 Person(
-                    id = 1L,
+                    id = 1L, // Single user architecture
                     name = state.name,
-                    relationshipType = state.relationshipType?.name ?: "",
+                    relationshipType = state.relationshipType?.name ?: "Situationship",
                     reminderHour = state.reminderHour.toLong(),
                     reminderMinute = state.reminderMinute.toLong()
                 )
             )
-            
-            // Schedule daily reminder notification
-            scheduler?.scheduleDailyReminder(
-                state.reminderHour,
-                state.reminderMinute,
-                "Time to reflect today 💭"
-            )
+
+            // 2. Schedule Notification
+            try {
+                scheduler?.scheduleDailyReminder(
+                    state.reminderHour,
+                    state.reminderMinute,
+                    "Time to reflect on your day with ${state.name} 🌙"
+                )
+            } catch (e: Exception) {
+                // Log error but don't crash; onboarding is still "complete" even if alarm fails
+                println("Failed to schedule reminder: ${e.message}")
+            }
         }
     }
 }

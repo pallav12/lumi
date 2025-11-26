@@ -12,12 +12,12 @@ import java.util.Calendar
 actual class NotificationScheduler(private val context: Context) {
 
     actual fun scheduleDailyReminder(hour: Int, minute: Int, message: String) {
-        // Cancel any existing work first
+        // Cancel any existing work first to avoid duplicates
         cancelDailyReminder()
-        
+
         scheduleNextReminder(hour, minute, message)
     }
-    
+
     private fun scheduleNextReminder(hour: Int, minute: Int, message: String) {
         val now = Calendar.getInstance()
         val target = Calendar.getInstance().apply {
@@ -27,8 +27,12 @@ actual class NotificationScheduler(private val context: Context) {
             set(Calendar.MILLISECOND, 0)
         }
 
-        var delay = target.timeInMillis - now.timeInMillis
-        if (delay <= 0) delay += TimeUnit.DAYS.toMillis(1)
+        // If target time is in the past, schedule for tomorrow
+        if (target.before(now)) {
+            target.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val delay = target.timeInMillis - now.timeInMillis
 
         // Pass hour and minute to worker so it can reschedule itself
         val inputData = Data.Builder()
@@ -43,18 +47,20 @@ actual class NotificationScheduler(private val context: Context) {
             .addTag("daily_reminder")
             .build()
 
+        // Use UNIQUE work to prevent duplicate alarms
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "daily_reminder",
+            "daily_reminder_work",
             ExistingWorkPolicy.REPLACE,
             request
         )
     }
-    
+
+    // Helper for the Worker to call
     fun rescheduleReminder(hour: Int, minute: Int, message: String) {
         scheduleNextReminder(hour, minute, message)
     }
 
     actual fun cancelDailyReminder() {
-        WorkManager.getInstance(context).cancelAllWorkByTag("daily_reminder")
+        WorkManager.getInstance(context).cancelUniqueWork("daily_reminder_work")
     }
 }

@@ -28,8 +28,13 @@ import com.desktop.lumi.home.presentation.MoodEffect
 import com.desktop.lumi.insights.models.TimelineItemUi
 import kotlinx.datetime.*
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlinx.datetime.minus
+import kotlinx.datetime.DateTimeUnit
 
 // --- Palette ---
 private val LumiBackground = Color(0xFFFAFAFA)
@@ -409,14 +414,26 @@ private fun getInteractionLabel(type: InteractionType): String {
 
 @OptIn(ExperimentalTime::class)
 private fun formatDateHeader(date: LocalDate): String {
-    val today = date
+    // FIX: Use todayIn() directly instead of converting Instant -> LocalDateTime -> Date
+    val timeZone = TimeZone.currentSystemDefault()
+    val today = Clock.System.todayIn(timeZone)
     val yesterday = today.minus(1, DateTimeUnit.DAY)
-    return when (date) {
-        today -> "Today"
-        yesterday -> "Yesterday"
-        else -> "${
-            date.month.name.lowercase().replaceFirstChar { it.uppercase() }
-        } ${date.dayOfMonth}"
+
+    return when {
+        date == today -> "Today"
+        date == yesterday -> "Yesterday"
+        else -> {
+            val todayEpoch = today.toEpochDays()
+            val dateEpoch = date.toEpochDays()
+            val daysDiff = (todayEpoch - dateEpoch)
+
+            when {
+                daysDiff == 2 -> "2 days ago"
+                daysDiff in 3..7 -> "$daysDiff days ago"
+                // Simple formatting for KMP
+                else -> "${date.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${date.dayOfMonth}"
+            }
+        }
     }
 }
 

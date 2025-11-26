@@ -19,6 +19,7 @@ import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,11 +41,13 @@ private val LumiPrimary = Color(0xFF8E8CD8)
 private val LumiSurface = Color(0xFFFFFFFF)
 private val TextPrimary = Color(0xFF2D2D39)
 private val TextSecondary = Color(0xFF8A8A99)
+private val NotificationHighlight = Color(0xFFFFF3CD) // Soft yellow background for highlight
+private val NotificationText = Color(0xFF856404) // Darker yellow/brown text
 
 @Composable
 fun OnboardingReminderTimeScreen(
-    hour: Int,                // 0–23
-    minute: Int,              // 0–59
+    hour: Int,
+    minute: Int,
     onTimeChange: (Int, Int) -> Unit,
     onFinish: () -> Unit,
     onBack: () -> Unit
@@ -60,7 +63,7 @@ fun OnboardingReminderTimeScreen(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 LinearProgressIndicator(
-                    progress = { 1.0f }, // Step 3 of 3 (Full)
+                    progress = { 1.0f },
                     modifier = Modifier.fillMaxWidth(),
                     color = LumiPrimary,
                     trackColor = LumiPrimary.copy(alpha = 0.1f),
@@ -99,7 +102,7 @@ fun OnboardingReminderTimeScreen(
                     elevation = ButtonDefaults.buttonElevation(6.dp)
                 ) {
                     Text(
-                        text = "All Set",
+                        text = "Enable & Finish",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -116,10 +119,8 @@ fun OnboardingReminderTimeScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 1. Header
             Text(
                 text = "When should we check in?",
                 style = MaterialTheme.typography.headlineMedium.copy(
@@ -132,7 +133,6 @@ fun OnboardingReminderTimeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Dynamic Icon Context
             AnimatedContent(
                 targetState = icon,
                 transitionSpec = { fadeIn(tween(500)) togetherWith fadeOut(tween(500)) }
@@ -154,9 +154,8 @@ fun OnboardingReminderTimeScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. The Time Picker "Pod"
             Card(
                 shape = RoundedCornerShape(32.dp),
                 colors = CardDefaults.cardColors(containerColor = LumiSurface),
@@ -168,7 +167,6 @@ fun OnboardingReminderTimeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    // Hour
                     WheelPicker(
                         value = hour,
                         range = 0..23,
@@ -183,13 +181,50 @@ fun OnboardingReminderTimeScreen(
                         modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 8.dp)
                     )
 
-                    // Minute
                     WheelPicker(
                         value = minute,
                         range = 0..59,
+                        step = 5, // Increments by 5 minutes now
                         onValueChange = { onTimeChange(hour, it) },
                         format = { it.toString().padStart(2, '0') }
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Recommendation Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NotificationHighlight),
+                elevation = CardDefaults.cardElevation(0.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.NotificationsActive,
+                        contentDescription = null,
+                        tint = NotificationText,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Highly Recommended",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = NotificationText
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Consistent reflection is key to spotting patterns. We promise not to spam you.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = NotificationText.copy(alpha = 0.9f)
+                        )
+                    }
                 }
             }
         }
@@ -200,35 +235,37 @@ fun OnboardingReminderTimeScreen(
 private fun WheelPicker(
     value: Int,
     range: IntRange,
+    step: Int = 1,
     onValueChange: (Int) -> Unit,
     format: (Int) -> String
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // Up
         IconButton(
             onClick = {
-                val next = if (value == range.last) range.first else value + 1
+                // Logic to wrap around range correctly with step
+                val span = range.last - range.first + 1
+                val next = ((value - range.first + step) % span) + range.first
                 onValueChange(next)
             }
         ) {
             Icon(Icons.Rounded.KeyboardArrowUp, null, tint = LumiPrimary)
         }
 
-        // Value
         Text(
             text = format(value),
             style = MaterialTheme.typography.displayMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace // Tabular figures align better
+                fontFamily = FontFamily.Monospace
             ),
             color = TextPrimary,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Down
         IconButton(
             onClick = {
-                val prev = if (value == range.first) range.last else value - 1
+                // Logic to wrap around range correctly with step (handling negatives)
+                val span = range.last - range.first + 1
+                val prev = ((value - range.first - step).rem(span) + span) % span + range.first
                 onValueChange(prev)
             }
         ) {
@@ -236,8 +273,6 @@ private fun WheelPicker(
         }
     }
 }
-
-
 @Preview
 @Composable
 fun PreviewNewTimePicker() {
@@ -247,7 +282,7 @@ fun PreviewNewTimePicker() {
             minute = 30,
             onTimeChange = { _, _ -> },
             onFinish = {},
-            onBack = {}
+            onBack = {},
         )
     }
 }

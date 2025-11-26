@@ -119,8 +119,9 @@ fun DailyReflectionScreen(
 
             // 4. The Action
             // We push this to the bottom of the content flow
+            // Require note if mood is neutral (3), otherwise just require mood to be selected
             SaveButton(
-                enabled = mood != null,
+                enabled = mood != null && (mood != 3 || note.isNotEmpty()),
                 onSave = onSave
             )
 

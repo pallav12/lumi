@@ -1,23 +1,27 @@
 package com.desktop.lumi.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
-import com.desktop.lumi.home.presentation.InteractionViewModel
-import com.desktop.lumi.home.presentation.ReflectionViewModel
-import com.desktop.lumi.insights.InsightsViewModel
-import com.desktop.lumi.settings.SettingsViewModel
 import com.desktop.lumi.home.presentation.DailyReflectionScreen
 import com.desktop.lumi.home.presentation.HomeScreen
 import com.desktop.lumi.home.presentation.InteractionLogScreen
+import com.desktop.lumi.home.presentation.InteractionViewModel
 import com.desktop.lumi.home.presentation.MoodEffect
+import com.desktop.lumi.home.presentation.ReflectionViewModel
 import com.desktop.lumi.insights.InsightsScreen
+import com.desktop.lumi.insights.InsightsViewModel
 import com.desktop.lumi.insights.TimelineScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingNameScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingRelationshipTypeScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingReminderTimeScreen
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
 import com.desktop.lumi.settings.SettingsScreen
+import com.desktop.lumi.settings.SettingsViewModel
+import com.desktop.lumi.sos.presentation.SosScreen
 
 @Composable
 fun AppNavHost(
@@ -26,8 +30,10 @@ fun AppNavHost(
     reflectionViewModel: ReflectionViewModel,
     interactionViewModel: InteractionViewModel,
     insightsViewModel: InsightsViewModel,
-    settingsViewModel: SettingsViewModel
-) {
+    settingsViewModel: SettingsViewModel,
+    sosViewModel: SosViewModel,
+    onRequestPermission: () -> Unit,
+    ) {
     val current = homeViewModel.currentScreen.collectAsStateWithLifecycle().value
 
     when (current) {
@@ -38,7 +44,7 @@ fun AppNavHost(
                 onNameChange = { onboardingViewModel.onNameChange(it) },
                 onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingType(current.fromSettings)) },
                 onBack = {
-                    if ((current ).fromSettings) {
+                    if ((current).fromSettings) {
                         homeViewModel.setCurrentScreen(Screen.Settings)
                     }
                 }
@@ -49,10 +55,10 @@ fun AppNavHost(
             val state = onboardingViewModel.uiState.collectAsStateWithLifecycle().value
             OnboardingRelationshipTypeScreen(
                 selectedType = state.relationshipType,
-                onSelectType = { onboardingViewModel.onRelationshipTypeChange(it) },
+                onSelectType = { onboardingViewModel.onRelationshipTypeSelect(it) },
                 onNext = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder(current.fromSettings)) },
                 onBack = {
-                    if ((current ).fromSettings) {
+                    if ((current).fromSettings) {
                         homeViewModel.setCurrentScreen(Screen.Settings)
                     }
                 }
@@ -64,13 +70,14 @@ fun AppNavHost(
             OnboardingReminderTimeScreen(
                 hour = state.reminderHour,
                 minute = state.reminderMinute,
-                onTimeChange = { h, m -> onboardingViewModel.onReminderTimeChange(h, m) },
+                onTimeChange = { h, m -> onboardingViewModel.onTimeChange(h, m) },
                 onFinish = {
                     onboardingViewModel.completeOnboarding()
                     homeViewModel.setCurrentScreen(Screen.Home)
+                    onRequestPermission()
                 },
                 onBack = {
-                    if ((current ).fromSettings) {
+                    if ((current).fromSettings) {
                         homeViewModel.setCurrentScreen(Screen.Settings)
                     }
                 }
@@ -85,15 +92,29 @@ fun AppNavHost(
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
                 onOpenTimeline = { homeViewModel.setCurrentScreen(Screen.Timeline) },
-                onOpenSettings = {homeViewModel.setCurrentScreen(Screen.Settings)},
-                onDismissInsight = {homeViewModel.clearInstantInsight()}
+                onOpenSettings = { homeViewModel.setCurrentScreen(Screen.Settings) },
+                onDismissInsight = { homeViewModel.clearInstantInsight() },
+                onOpenSOS = { homeViewModel.setCurrentScreen(Screen.SOS) }
+            )
+        }
+
+        Screen.SOS -> {
+            val state by sosViewModel.step.collectAsState()
+            SosScreen(
+                state = state,
+                onBreathingDone = { sosViewModel.onBreathingDone() },
+                onRealityCheckComplete = { sosViewModel.onRealityCheckComplete() },
+                onExit = {
+                    sosViewModel.reset()
+                    homeViewModel.setCurrentScreen(Screen.Home)
+                }
             )
         }
 
         Screen.Reflection -> {
             val state = reflectionViewModel.uiState.collectAsStateWithLifecycle().value
             DailyReflectionScreen(
-                mood = state.mood.takeIf { it != 3 || state.note.isNotEmpty() },
+                mood = state.mood,
                 note = state.note,
                 onMoodSelected = { reflectionViewModel.onMoodSelected(it) },
                 onNoteChange = { reflectionViewModel.onNoteChange(it) },
@@ -124,7 +145,7 @@ fun AppNavHost(
                     }
                     interactionViewModel.onMoodEffectSelected(moodEffectInt)
                 },
-                onSave = {interactionType->
+                onSave = { interactionType ->
                     interactionViewModel.saveInteraction()
                     homeViewModel.setCurrentScreen(Screen.Home)
                     homeViewModel.showInstantInsight(interactionType)

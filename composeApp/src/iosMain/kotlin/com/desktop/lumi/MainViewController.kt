@@ -21,6 +21,8 @@ fun MainViewController() = ComposeUIViewController {
         reflectionViewModel = module.provideReflectionViewModel(),
         interactionViewModel = module.provideInteractionViewModel(),
         insightsViewModel = module.provideInsightsViewModel(),
-        settingsViewModel = settingsViewModel
+        settingsViewModel = settingsViewModel,
+        sosViewModel = module.provideSoSViewModel(),
+        {}
     )
 }
