@@ -2,6 +2,7 @@ package com.desktop.lumi.onboarding.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
 import com.desktop.lumi.domain.model.Person
 import com.desktop.lumi.domain.repository.PersonRepository
@@ -22,7 +23,8 @@ data class OnboardingUiState(
 
 class OnboardingViewModel(
     private val repo: PersonRepository,
-    private val scheduler: NotificationScheduler? = null
+    private val scheduler: NotificationScheduler? = null,
+    private val analytics: Analytics? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
@@ -92,6 +94,16 @@ class OnboardingViewModel(
                 // Log error but don't crash; onboarding is still "complete" even if alarm fails
                 println("Failed to schedule reminder: ${e.message}")
             }
+
+            // 3. Track analytics event
+            analytics?.logEvent(
+                "onboarding_complete",
+                mapOf(
+                    "relationship_type" to (state.relationshipType?.name ?: "unknown"),
+                    "reminder_hour" to state.reminderHour,
+                    "reminder_minute" to state.reminderMinute
+                )
+            )
         }
     }
 }

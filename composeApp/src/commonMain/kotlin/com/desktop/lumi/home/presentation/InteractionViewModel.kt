@@ -2,6 +2,7 @@ package com.desktop.lumi.home.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.domain.model.Interaction
 import com.desktop.lumi.domain.repository.InteractionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +12,8 @@ import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
 class InteractionViewModel(
-    private val interactionRepository: InteractionRepository
+    private val interactionRepository: InteractionRepository,
+    private val analytics: Analytics? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InteractionUiState())
@@ -44,6 +46,15 @@ class InteractionViewModel(
             )
 
             interactionRepository.saveInteraction(interaction)
+            
+            // Track analytics event
+            analytics?.logEvent(
+                "interaction_logged",
+                mapOf(
+                    "type" to state.type.name,
+                    "mood_effect" to state.moodEffect
+                )
+            )
         }
     }
 }

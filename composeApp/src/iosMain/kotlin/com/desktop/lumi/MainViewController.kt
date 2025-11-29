@@ -1,6 +1,7 @@
 package com.desktop.lumi
 
 import androidx.compose.ui.window.ComposeUIViewController
+import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.common.App
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
@@ -9,7 +10,7 @@ import com.desktop.lumi.settings.SettingsViewModel
 
 fun MainViewController() = ComposeUIViewController {
     val scheduler = NotificationScheduler()
-    val module = AppModule(DatabaseDriverFactory(), scheduler)
+    val module = AppModule(DatabaseDriverFactory(), scheduler, Analytics())
 
     val settingsViewModel = SettingsViewModel(
         personRepository = module.personRepository,
@@ -23,6 +24,7 @@ fun MainViewController() = ComposeUIViewController {
         insightsViewModel = module.provideInsightsViewModel(),
         settingsViewModel = settingsViewModel,
         sosViewModel = module.provideSoSViewModel(),
+        voidViewModel = module.provideVoidViewModel(),
         {}
     )
 }

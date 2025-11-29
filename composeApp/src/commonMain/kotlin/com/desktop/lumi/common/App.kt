@@ -2,6 +2,7 @@ package com.desktop.lumi.common
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
@@ -21,6 +22,7 @@ fun App(
     insightsViewModel: InsightsViewModel,
     settingsViewModel: SettingsViewModel,
     sosViewModel: SosViewModel,
+    voidViewModel: VoidViewModel,
     onRequestPermission: () -> Unit,
 ) {
     MaterialTheme {
@@ -32,6 +34,7 @@ fun App(
             insightsViewModel = insightsViewModel,
             settingsViewModel = settingsViewModel,
             sosViewModel = sosViewModel,
+            voidViewModel = voidViewModel,
             onRequestPermission = onRequestPermission,
         )
     }

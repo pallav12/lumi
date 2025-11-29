@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.common.App
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val appModule by lazy {
-        AppModule(DatabaseDriverFactory(this), scheduler)
+        AppModule(DatabaseDriverFactory(this), scheduler, Analytics())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 insightsViewModel = appModule.provideInsightsViewModel(),
                 settingsViewModel = settingsViewModel,
                 sosViewModel = appModule.provideSoSViewModel(),
+                voidViewModel = appModule.provideVoidViewModel(),
                 onRequestPermission = requestNotificationPermission,
             )
         }

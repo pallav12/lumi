@@ -1,5 +1,6 @@
 package com.desktop.lumi.db.com.desktop.lumi.di
 
+import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.data.repository.InsightsRepositoryImpl
 import com.desktop.lumi.data.repository.InteractionRepositoryImpl
 import com.desktop.lumi.data.repository.PersonRepositoryImpl
@@ -7,6 +8,7 @@ import com.desktop.lumi.data.repository.ReflectionRepositoryImpl
 import com.desktop.lumi.db.AppDatabase
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
+import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
@@ -21,7 +23,8 @@ import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
 
 class AppModule(
     driverFactory: DatabaseDriverFactory,
-    private val notificationScheduler: NotificationScheduler? = null
+    private val notificationScheduler: NotificationScheduler? = null,
+    private val analytics: Analytics? = null
 ) {
     val database: AppDatabase = AppDatabase(driverFactory.createDriver())
 
@@ -43,14 +46,23 @@ class AppModule(
 
     fun provideOnboardingViewModel() = OnboardingViewModel(
         personRepository,
-        notificationScheduler
+        notificationScheduler,
+        analytics
     )
 
-    fun provideReflectionViewModel() = ReflectionViewModel(reflectionRepository)
+    fun provideReflectionViewModel() = ReflectionViewModel(
+        reflectionRepository,
+        analytics
+    )
 
-    fun provideInteractionViewModel() = InteractionViewModel(interactionRepository)
+    fun provideInteractionViewModel() = InteractionViewModel(
+        interactionRepository,
+        analytics
+    )
 
-    fun provideSoSViewModel() = SosViewModel()
+    fun provideSoSViewModel() = SosViewModel(analytics)
+    fun provideVoidViewModel() = VoidViewModel(analytics)
+
     fun provideInsightsViewModel() =
         InsightsViewModel(insightsRepository, reflectionRepository, interactionRepository)
 }

@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
+    id("com.google.firebase.crashlytics")
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -31,6 +33,9 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.hilt.android)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:32.7.0")) // Or latest version
+            implementation(libs.firebase.analytics)
+            implementation(libs.firebase.crashlytics)
             val work_version = "2.9.0"
             implementation("androidx.work:work-runtime-ktx:$work_version")
             implementation(libs.sqldelight.android.driver) // ❗ Add Android driver
@@ -38,6 +43,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
+            implementation("org.jetbrains.compose.ui:ui-backhandler:1.9.1")
             implementation(compose.materialIconsExtended)
             implementation(libs.coroutines.extensions)
             implementation(compose.material3)
@@ -69,8 +75,8 @@ android {
         applicationId = "com.desktop.lumi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 3
-        versionName = "2.0"
+        versionCode = 6
+        versionName = "2.3"
     }
 
     packaging {

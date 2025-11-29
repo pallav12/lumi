@@ -10,8 +10,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.*
@@ -42,6 +45,8 @@ private val TextSecondary = Color(0xFF8A8A99)
 private val PositiveGreen = Color(0xFF98D8AA)
 private val NegativeRed = Color(0xFFFF9E9E)
 private val SOSColor = Color(0xFFE57373) // Soft Red for SOS
+private val TimelineColor = Color(0xFFA0C4FF) // Soft Blue for Timeline
+private val VoidColor = Color(0xFF2D1B4E) // Deep mystic purple/black for Void
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +58,8 @@ fun HomeScreen(
     onOpenTimeline: () -> Unit,
     onOpenSettings: () -> Unit,
     onDismissInsight: () -> Unit,
-    onOpenSOS: () -> Unit // ⬅ NEW: Callback for SOS
+    onOpenSOS: () -> Unit,
+    onOpenVoid: () -> Unit
 ) {
     Scaffold(
         containerColor = LumiBackground,
@@ -95,10 +101,14 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // 2. SOS Button (The Panic Button)
+                // Placed prominently at the top for immediate access
                 SOSButton(onClick = onOpenSOS)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // 3. The Main "Action" Card (Reflection)
+                // If they haven't reflected, this invites them. If they have, it celebrates them.
                 DailyReflectionCard(
                     reflection = uiState.todayReflection,
                     onClick = onLogReflection
@@ -110,16 +120,21 @@ fun HomeScreen(
                 // Moved up because visuals engage users
                 WeeklyVitalsSection(
                     weeklyTrend = uiState.weeklyTrend,
-                    onOpenTimeline = onOpenTimeline
+                    onOpenTimeline = onOpenTimeline // Restored the link here
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 5. Action Buttons (Grid Layout)
+                // 5. Primary Actions (Log & Insights)
                 ActionGrid(
                     onLogInteraction = onLogInteraction,
                     onOpenInsights = onOpenInsights
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // 6. The Void (The "Portal" at the bottom)
+                VoidPortalCard(onClick = onOpenVoid)
 
                 Spacer(modifier = Modifier.height(48.dp)) // Bottom breathing room
             }
@@ -269,7 +284,7 @@ private fun DailyReflectionCard(
 @Composable
 private fun WeeklyVitalsSection(
     weeklyTrend: HomeViewModel.WeeklyTrendUiState,
-    onOpenTimeline: () -> Unit
+    onOpenTimeline: () -> Unit // Passed back in
 ) {
     Column {
         Row(
@@ -283,12 +298,18 @@ private fun WeeklyVitalsSection(
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
             )
+            // Restored the History Link
             TextButton(onClick = onOpenTimeline) {
-                Text("See History", color = LumiPrimary)
+                Text(
+                    "See History",
+                    color = LumiPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Card(
             shape = RoundedCornerShape(24.dp),
@@ -409,6 +430,50 @@ private fun ActionButton(
 }
 
 @Composable
+private fun VoidPortalCard(onClick: () -> Unit) {
+    // Unique "Dark Mode" card to represent entering the Void
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = VoidColor),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Enter The Void",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Vent safely. Burn the message.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
+
+            // Mysterious Icon
+            Icon(
+                imageVector = Icons.Rounded.AutoAwesome, // Sparkles/Magic
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.9f),
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
 private fun SmoothMoodGraph(
     moodPoints: List<Int>,
     modifier: Modifier = Modifier
@@ -512,7 +577,7 @@ fun NewHomePreview() {
                     negativeCount = 4
                 )
             ),
-            {}, {}, {}, {}, {}, {}, {}
+            {}, {}, {}, {}, {}, {}, {}, {}
         )
     }
 }

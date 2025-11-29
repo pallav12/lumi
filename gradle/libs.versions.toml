@@ -25,6 +25,8 @@ sqldelight = "1.5.5"
 [libraries]
 coroutines-extensions = { module = "com.squareup.sqldelight:coroutines-extensions", version.ref = "runtime" }
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -45,6 +47,7 @@ sqldelight-android-driver = { module = "com.squareup.sqldelight:android-driver",
 sqldelight-native-driver = { module = "com.squareup.sqldelight:native-driver", version.ref = "sqldelight" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
