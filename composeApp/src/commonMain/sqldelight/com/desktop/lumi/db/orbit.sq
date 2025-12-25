@@ -1,0 +1,34 @@
+CREATE TABLE orbit (
+    id INTEGER NOT NULL PRIMARY KEY DEFAULT 1, -- Singleton row
+    is_active INTEGER NOT NULL DEFAULT 0,
+    start_time INTEGER NOT NULL DEFAULT 0,
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    intention TEXT NOT NULL DEFAULT '',
+    is_completed INTEGER NOT NULL DEFAULT 0
+);
+
+-- Initialize the singleton row if it doesn't exist
+initOrbit:
+INSERT OR IGNORE INTO orbit (id, is_active, start_time, duration_minutes, intention, is_completed)
+VALUES (1, 0, 0, 0, '', 0);
+
+getOrbit:
+SELECT * FROM orbit WHERE id = 1;
+
+updateOrbit:
+UPDATE orbit
+SET is_active = ?,
+    start_time = ?,
+    duration_minutes = ?,
+    intention = ?,
+    is_completed = ?
+WHERE id = 1;
+
+resetOrbit:
+UPDATE orbit
+SET is_active = 0,
+    start_time = 0,
+    duration_minutes = 0,
+    intention = '',
+    is_completed = 0
+WHERE id = 1;

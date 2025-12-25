@@ -75,6 +75,8 @@ class MainActivity : ComponentActivity() {
                 settingsViewModel = settingsViewModel,
                 sosViewModel = appModule.provideSoSViewModel(),
                 voidViewModel = appModule.provideVoidViewModel(),
+                scriptViewModel = appModule.provideScriptViewModel(),
+                orbitViewModel = appModule.provideOrbitViewModel(),
                 onRequestPermission = requestNotificationPermission,
             )
         }

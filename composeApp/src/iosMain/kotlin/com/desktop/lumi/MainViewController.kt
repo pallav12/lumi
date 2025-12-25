@@ -25,6 +25,7 @@ fun MainViewController() = ComposeUIViewController {
         settingsViewModel = settingsViewModel,
         sosViewModel = module.provideSoSViewModel(),
         voidViewModel = module.provideVoidViewModel(),
+        scriptViewModel = module.provideScriptViewModel(),
         {}
     )
 }

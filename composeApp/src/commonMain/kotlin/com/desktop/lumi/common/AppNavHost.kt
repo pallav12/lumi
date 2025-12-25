@@ -24,6 +24,10 @@ import com.desktop.lumi.onboarding.presentation.composable.OnboardingNameScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingRelationshipTypeScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingReminderTimeScreen
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
+import com.desktop.lumi.orbit.OrbitScreen
+import com.desktop.lumi.orbit.OrbitViewModel
+import com.desktop.lumi.script.ui.ScriptLibraryScreen
+import com.desktop.lumi.script.viewmodel.ScriptViewModel
 import com.desktop.lumi.settings.SettingsScreen
 import com.desktop.lumi.settings.SettingsViewModel
 import com.desktop.lumi.sos.presentation.SosScreen
@@ -39,6 +43,8 @@ fun AppNavHost(
     settingsViewModel: SettingsViewModel,
     sosViewModel: SosViewModel,
     voidViewModel: VoidViewModel,
+    scriptViewModel: ScriptViewModel,
+    orbitViewModel: OrbitViewModel,
     onRequestPermission: () -> Unit,
 ) {
     val current = homeViewModel.currentScreen.collectAsStateWithLifecycle().value
@@ -127,6 +133,7 @@ fun AppNavHost(
             val state = homeViewModel.uiState.collectAsStateWithLifecycle().value
             HomeScreen(
                 uiState = state,
+                orbitState = orbitViewModel.uiState.collectAsStateWithLifecycle().value,
                 onLogReflection = { homeViewModel.setCurrentScreen(Screen.Reflection) },
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
@@ -134,7 +141,9 @@ fun AppNavHost(
                 onOpenSettings = { homeViewModel.setCurrentScreen(Screen.Settings) },
                 onDismissInsight = { homeViewModel.clearInstantInsight() },
                 onOpenSOS = { homeViewModel.setCurrentScreen(Screen.SOS) },
-                onOpenVoid = {homeViewModel.setCurrentScreen(Screen.Void)}
+                onOpenVoid = { homeViewModel.setCurrentScreen(Screen.Void) },
+                onOpenScripts = { homeViewModel.setCurrentScreen(Screen.Scripts) },
+                onOpenOrbit = { homeViewModel.setCurrentScreen(Screen.Orbit) }
             )
         }
 
@@ -259,6 +268,31 @@ fun AppNavHost(
                 onRelease = voidViewModel::onRelease, onBack = {
                     homeViewModel.setCurrentScreen(Screen.Home)
                 })
+        }
+
+        Screen.Scripts -> {
+            BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            val state = scriptViewModel.uiState.collectAsStateWithLifecycle().value
+            ScriptLibraryScreen(
+                state = state,
+                onCategorySelect = { scriptViewModel.selectCategory(it) },
+                onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
+            )
+        }
+
+        Screen.Orbit -> {
+            BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            val state = orbitViewModel.uiState.collectAsStateWithLifecycle().value
+            OrbitScreen(
+                state = state,
+                onStart = orbitViewModel::startOrbit,
+                onBreak = orbitViewModel::breakOrbit,
+                onFinish = orbitViewModel::finishOrbit,
+                onBack = { homeViewModel.setCurrentScreen(Screen.Home) },
+                onGoToSOS = { homeViewModel.setCurrentScreen(Screen.SOS) }
+            )
         }
     }
 }

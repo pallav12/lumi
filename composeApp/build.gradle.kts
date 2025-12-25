@@ -64,6 +64,7 @@ kotlin {
 sqldelight {
     database("AppDatabase") {
         packageName = "com.desktop.lumi.db"
+        version = 2
     }
 }
 

@@ -13,6 +13,8 @@ sealed class Screen {
     data object Settings : Screen()
     data object SOS : Screen()
     data object Void : Screen()
+    data object Scripts : Screen()
+    data object Orbit : Screen()
 }
 
 

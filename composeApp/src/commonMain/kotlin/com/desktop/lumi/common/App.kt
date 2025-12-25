@@ -9,6 +9,8 @@ import com.desktop.lumi.home.presentation.InteractionViewModel
 import com.desktop.lumi.home.presentation.ReflectionViewModel
 import com.desktop.lumi.insights.InsightsViewModel
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
+import com.desktop.lumi.orbit.OrbitViewModel
+import com.desktop.lumi.script.viewmodel.ScriptViewModel
 import com.desktop.lumi.settings.SettingsViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -23,6 +25,8 @@ fun App(
     settingsViewModel: SettingsViewModel,
     sosViewModel: SosViewModel,
     voidViewModel: VoidViewModel,
+    scriptViewModel: ScriptViewModel,
+    orbitViewModel: OrbitViewModel,
     onRequestPermission: () -> Unit,
 ) {
     MaterialTheme {
@@ -35,6 +39,8 @@ fun App(
             settingsViewModel = settingsViewModel,
             sosViewModel = sosViewModel,
             voidViewModel = voidViewModel,
+            scriptViewModel = scriptViewModel, // ⬅ NEW
+            orbitViewModel = orbitViewModel,
             onRequestPermission = onRequestPermission,
         )
     }

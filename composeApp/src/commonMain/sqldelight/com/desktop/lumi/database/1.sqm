@@ -1,0 +1,13 @@
+-- Create the new Orbit table
+CREATE TABLE orbit (
+    id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,
+    is_active INTEGER NOT NULL DEFAULT 0,
+    start_time INTEGER NOT NULL DEFAULT 0,
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    intention TEXT NOT NULL DEFAULT '',
+    is_completed INTEGER NOT NULL DEFAULT 0
+);
+
+-- Initialize the default row immediately so the app doesn't crash on empty select
+INSERT OR IGNORE INTO orbit (id, is_active, start_time, duration_minutes, intention, is_completed)
+VALUES (1, 0, 0, 0, '', 0);

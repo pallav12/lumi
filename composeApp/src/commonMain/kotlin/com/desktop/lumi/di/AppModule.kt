@@ -12,6 +12,8 @@ import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
+import com.desktop.lumi.domain.repository.OrbitRepository
+import com.desktop.lumi.domain.repository.OrbitRepositoryImpl
 import com.desktop.lumi.domain.repository.PersonRepository
 import com.desktop.lumi.domain.repository.ReflectionRepository
 import com.desktop.lumi.home.HomeViewModel
@@ -20,6 +22,8 @@ import com.desktop.lumi.home.presentation.ReflectionViewModel
 import com.desktop.lumi.insights.InsightsViewModel
 import com.desktop.lumi.instantmirror.InsightEngine
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
+import com.desktop.lumi.orbit.OrbitViewModel
+import com.desktop.lumi.script.viewmodel.ScriptViewModel
 
 class AppModule(
     driverFactory: DatabaseDriverFactory,
@@ -34,6 +38,7 @@ class AppModule(
     val interactionRepository: InteractionRepository = InteractionRepositoryImpl(database)
     val insightsRepository: InsightsRepository = InsightsRepositoryImpl(reflectionRepository)
     val insightsEngine = InsightEngine()
+    val orbitReflectionRepository: OrbitRepository = OrbitRepositoryImpl(database)
 
     // ViewModels
     fun provideHomeViewModel() = HomeViewModel(
@@ -65,4 +70,12 @@ class AppModule(
 
     fun provideInsightsViewModel() =
         InsightsViewModel(insightsRepository, reflectionRepository, interactionRepository)
+
+    fun provideScriptViewModel(): ScriptViewModel {
+        return ScriptViewModel()
+    }
+
+    fun provideOrbitViewModel(): OrbitViewModel {
+        return OrbitViewModel(orbitReflectionRepository, analytics, notificationScheduler)
+    }
 }
