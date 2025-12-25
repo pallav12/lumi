@@ -44,4 +44,20 @@ actual class NotificationScheduler {
         UNUserNotificationCenter.currentNotificationCenter()
             .removePendingNotificationRequestsWithIdentifiers(listOf("daily_reminder"))
     }
+
+    actual fun scheduleOrbitCheckIn(delayMinutes: Long) {
+
+    }
+
+    actual fun scheduleVoidNudge(delayDays: Long) {
+    }
+
+    actual fun scheduleWeeklyReport() {
+    }
+
+    actual fun scheduleStreakNudge() {
+    }
+
+    actual fun cancelOrbitNotifications() {
+    }
 }

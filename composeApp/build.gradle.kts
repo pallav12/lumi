@@ -36,6 +36,7 @@ kotlin {
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:32.7.0")) // Or latest version
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
+            implementation(libs.review)
             val work_version = "2.9.0"
             implementation("androidx.work:work-runtime-ktx:$work_version")
             implementation(libs.sqldelight.android.driver) // ❗ Add Android driver
@@ -76,8 +77,8 @@ android {
         applicationId = "com.desktop.lumi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 6
-        versionName = "2.3"
+        versionCode = 7
+        versionName = "2.4"
     }
 
     packaging {

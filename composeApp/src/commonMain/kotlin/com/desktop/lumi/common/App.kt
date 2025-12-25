@@ -1,8 +1,8 @@
 package com.desktop.lumi.common
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
-import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
@@ -12,10 +12,9 @@ import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
 import com.desktop.lumi.orbit.OrbitViewModel
 import com.desktop.lumi.script.viewmodel.ScriptViewModel
 import com.desktop.lumi.settings.SettingsViewModel
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.desktop.lumi.void.VoidViewModel
 
 @Composable
-@Preview
 fun App(
     homeViewModel: HomeViewModel,
     onboardingViewModel: OnboardingViewModel,
@@ -27,8 +26,23 @@ fun App(
     voidViewModel: VoidViewModel,
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
-    onRequestPermission: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
+    onRequestReview: () -> Unit,
+    deepLinkDestination: String? = null
 ) {
+    LaunchedEffect(deepLinkDestination) {
+        if (deepLinkDestination != null) {
+            when (deepLinkDestination) {
+                "orbit" -> homeViewModel.setCurrentScreen(Screen.Home) // Or Screen.Orbit if you want to open it directly? Home handles orbit banner.
+                "void" -> homeViewModel.setCurrentScreen(Screen.Void)
+                "insights" -> homeViewModel.setCurrentScreen(Screen.Insights)
+                "streak" -> homeViewModel.setCurrentScreen(Screen.Home)
+                // Add logic to open OrbitScreen directly if needed:
+                // "orbit" -> { homeViewModel.setCurrentScreen(Screen.Home); /* trigger orbit open */ }
+            }
+        }
+    }
+
     MaterialTheme {
         AppNavHost(
             homeViewModel = homeViewModel,
@@ -39,9 +53,10 @@ fun App(
             settingsViewModel = settingsViewModel,
             sosViewModel = sosViewModel,
             voidViewModel = voidViewModel,
-            scriptViewModel = scriptViewModel, // ⬅ NEW
+            scriptViewModel = scriptViewModel,
             orbitViewModel = orbitViewModel,
-            onRequestPermission = onRequestPermission,
+            onRequestPermission = onRequestNotificationPermission,
+            onRequestReview = onRequestReview
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.desktop.lumi
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,10 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.common.App
@@ -31,28 +28,27 @@ class MainActivity : ComponentActivity() {
         AppModule(DatabaseDriverFactory(this), scheduler, Analytics())
     }
 
+    private val reviewManager by lazy { AndroidReviewManager(this, Analytics()) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        scheduler.scheduleWeeklyReport()
         val settingsViewModel = SettingsViewModel(
             personRepository = appModule.personRepository,
             scheduler = scheduler
         )
 
+        val deepLinkDestination = intent?.getStringExtra("navigation_route")
+
         setContent {
-            // State to track what to do after permission result (e.g., finish onboarding)
-            // You might not need this if 'onFinish' handles navigation regardless of result
 
             val notificationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
-                onResult = { isGranted ->
-                    // Logic to handle result if needed, or just rely on the flow continuing.
-                    // For simple onboarding, we might just proceed regardless.
-                }
+                onResult = { /* Handled */ }
             )
 
-            // This is the callback we pass to the Common Main App
             val requestNotificationPermission: () -> Unit = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     val hasPermission = ContextCompat.checkSelfPermission(
@@ -76,9 +72,16 @@ class MainActivity : ComponentActivity() {
                 sosViewModel = appModule.provideSoSViewModel(),
                 voidViewModel = appModule.provideVoidViewModel(),
                 scriptViewModel = appModule.provideScriptViewModel(),
+                onRequestNotificationPermission = requestNotificationPermission,
                 orbitViewModel = appModule.provideOrbitViewModel(),
-                onRequestPermission = requestNotificationPermission,
+                onRequestReview = { reviewManager.tryRequestReview(this) },
+                deepLinkDestination = deepLinkDestination // ⬅ Pass the route
             )
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 }

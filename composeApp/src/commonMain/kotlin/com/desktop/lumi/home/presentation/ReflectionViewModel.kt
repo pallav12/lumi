@@ -3,6 +3,7 @@ package com.desktop.lumi.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desktop.lumi.analytics.Analytics
+import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
 import com.desktop.lumi.domain.model.Reflection
 import com.desktop.lumi.domain.repository.ReflectionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,8 @@ import kotlin.time.ExperimentalTime
 
 class ReflectionViewModel(
     private val reflectionRepository: ReflectionRepository,
-    private val analytics: Analytics? = null
+    private val analytics: Analytics? = null,
+    private val scheduler: NotificationScheduler?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReflectionUiState())
@@ -45,7 +47,8 @@ class ReflectionViewModel(
             )
 
             reflectionRepository.saveReflection(reflection)
-            
+            scheduler?.scheduleStreakNudge()
+
             // Track analytics event
             analytics?.logEvent(
                 "reflection_logged",
@@ -55,7 +58,7 @@ class ReflectionViewModel(
                     "note_length" to state.note.length
                 )
             )
-            
+
             _uiState.value = ReflectionUiState()
         }
     }

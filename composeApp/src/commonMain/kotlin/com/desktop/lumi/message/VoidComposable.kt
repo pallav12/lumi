@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desktop.lumi.void.VoidViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 // The "Void" Palette

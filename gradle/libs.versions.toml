@@ -18,8 +18,11 @@ kotlinx-datetime = "0.6.0"
 kotlinxCoroutinesCore = "1.10.2"
 kotlinxCoroutinesCoreVersion = "1.7.3"
 kotlinxSerializationCore = "1.9.0"
+review = "2.0.2"
 runtime = "1.5.5"
 sqldelight = "1.5.5"
+coreKtx = "1.10.3"
+reviewKtx = "2.0.2"
 
 
 [libraries]
@@ -41,6 +44,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-core-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCoreVersion" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+review = { module = "com.google.android.play:review", version.ref = "review" }
 runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "runtime" }
 sqldelight-runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "sqldelight" }
 sqldelight-android-driver = { module = "com.squareup.sqldelight:android-driver", version.ref = "sqldelight" }
@@ -48,6 +52,8 @@ sqldelight-native-driver = { module = "com.squareup.sqldelight:native-driver", v
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler" }
+core-ktx = { group = "com.google.android.play", name = "core-ktx", version.ref = "coreKtx" }
+review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "reviewKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

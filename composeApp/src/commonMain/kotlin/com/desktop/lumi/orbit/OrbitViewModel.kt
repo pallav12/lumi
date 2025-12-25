@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
-
 class OrbitViewModel(
     private val repository: OrbitRepository,
     private val analytics: Analytics?,
@@ -27,24 +26,24 @@ class OrbitViewModel(
         val startTime: Long = 0L,
         val durationMinutes: Long = 0L,
         val intention: String = "",
-        val progress: Float = 0f, // 0.0 to 1.0 (Calculated)
-        val timeReclaimed: String = "0m", // (Calculated)
+        val progress: Float = 0f,
+        val timeReclaimed: String = "0m",
         val isCompleted: Boolean = false
     )
 
     private val _uiState = MutableStateFlow(OrbitState())
     val uiState = _uiState.asStateFlow()
 
+    private val _reviewEvent = MutableStateFlow(false)
+    val reviewEvent = _reviewEvent.asStateFlow()
+
     private var timerJob: Job? = null
 
+
     init {
-        // Observe DB changes and update local state
         viewModelScope.launch {
             repository.getOrbitState().collectLatest { dbState ->
-                // When we get state from DB, we need to recalculate progress immediately
-                // to avoid UI jump.
                 updateLocalStateFromDb(dbState)
-
                 if (dbState.isActive && !dbState.isCompleted) {
                     startTicker()
                 } else {
@@ -58,27 +57,25 @@ class OrbitViewModel(
     private fun updateLocalStateFromDb(dbState: OrbitState) {
         val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
 
-        // Calculate progress logic
         if (dbState.isActive) {
             val elapsedMillis = now - dbState.startTime
             val totalMillis = dbState.durationMinutes * 60 * 1000
 
             if (elapsedMillis >= totalMillis && !dbState.isCompleted) {
-                // It finished while we were away!
-                // We should update DB to completed.
+                // Completed while away
                 viewModelScope.launch {
                     repository.updateOrbitState(
                         dbState.copy(isCompleted = true, isActive = false)
                     )
                 }
+                // Trigger Review on return
+                _reviewEvent.value = true
             } else {
                 val progress =
                     if (totalMillis > 0) elapsedMillis.toFloat() / totalMillis.toFloat() else 0f
-                val clampedProgress = progress.coerceIn(0f, 1f)
-
                 _uiState.update {
                     dbState.copy(
-                        progress = clampedProgress,
+                        progress = progress.coerceIn(0f, 1f),
                         timeReclaimed = formatDuration(elapsedMillis / 1000 / 60)
                     )
                 }
@@ -110,19 +107,8 @@ class OrbitViewModel(
 
         viewModelScope.launch {
             repository.updateOrbitState(newState)
-
-            // Schedule Notification
-            // Calculate target hour/minute for the scheduler
-            // Note: Your scheduler takes hour/minute of the day.
-            // We need to calculate that.
-            // This is a bit complex with timezone crossing midnights, etc.
-            // For MVP, if your scheduler only supports "Daily Reminder" type logic,
-            // we might need a "OneOff" scheduler method.
-            // Assuming we can't easily change Scheduler interface right now, we skip notification
-            // or we add a specific method to Scheduler later.
-            // Let's assume we skip it for this specific code block to avoid breaking Scheduler,
-            // OR use a simple delay if app is open.
-            // Ideally: scheduler.scheduleOneOffNotification(delayMillis, "Orbit Complete")
+            // Schedule check-in
+            scheduler?.scheduleOrbitCheckIn((durationMins / 2))
         }
 
         analytics?.logEvent("orbit_started", mapOf("duration" to durationHours))
@@ -133,7 +119,7 @@ class OrbitViewModel(
         if (timerJob?.isActive == true) return
 
         timerJob = viewModelScope.launch {
-            while (true) { // rely on job cancellation
+            while (true) {
                 val state = _uiState.value
                 if (!state.isActive) break
 
@@ -147,9 +133,10 @@ class OrbitViewModel(
                         state.copy(isActive = false, isCompleted = true)
                     )
                     analytics?.logEvent("orbit_completed")
+
+                    _reviewEvent.value = true
                     break
                 } else {
-                    // Update UI only (optimization: don't write to DB every second)
                     val progress = elapsedMillis.toFloat() / totalMillis.toFloat()
                     _uiState.update {
                         it.copy(
@@ -158,23 +145,21 @@ class OrbitViewModel(
                         )
                     }
                 }
-                delay(1.minutes) // Update every minute
+                delay(1.minutes)
             }
         }
     }
 
+    // ... (breakOrbit, finishOrbit, formatDuration remain same) ...
     fun breakOrbit() {
-        viewModelScope.launch {
-            repository.resetOrbit()
-        }
+        viewModelScope.launch { repository.resetOrbit() }
         timerJob?.cancel()
+        scheduler?.cancelOrbitNotifications()
         analytics?.logEvent("orbit_broken")
     }
 
     fun finishOrbit() {
-        viewModelScope.launch {
-            repository.resetOrbit()
-        }
+        viewModelScope.launch { repository.resetOrbit() }
         timerJob?.cancel()
     }
 
@@ -182,5 +167,9 @@ class OrbitViewModel(
         val h = minutes / 60
         val m = minutes % 60
         return if (h > 0) "${h}h ${m}m" else "${m}m"
+    }
+
+    fun onReviewShown() {
+        _reviewEvent.value = false
     }
 }

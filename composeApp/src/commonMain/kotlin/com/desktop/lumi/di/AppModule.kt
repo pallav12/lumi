@@ -8,7 +8,6 @@ import com.desktop.lumi.data.repository.ReflectionRepositoryImpl
 import com.desktop.lumi.db.AppDatabase
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
-import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
@@ -24,6 +23,7 @@ import com.desktop.lumi.instantmirror.InsightEngine
 import com.desktop.lumi.onboarding.presentation.viewmodel.OnboardingViewModel
 import com.desktop.lumi.orbit.OrbitViewModel
 import com.desktop.lumi.script.viewmodel.ScriptViewModel
+import com.desktop.lumi.void.VoidViewModel
 
 class AppModule(
     driverFactory: DatabaseDriverFactory,
@@ -57,16 +57,18 @@ class AppModule(
 
     fun provideReflectionViewModel() = ReflectionViewModel(
         reflectionRepository,
-        analytics
+        analytics,
+        notificationScheduler
     )
 
     fun provideInteractionViewModel() = InteractionViewModel(
         interactionRepository,
-        analytics
+        analytics,
+        notificationScheduler
     )
 
     fun provideSoSViewModel() = SosViewModel(analytics)
-    fun provideVoidViewModel() = VoidViewModel(analytics)
+    fun provideVoidViewModel() = VoidViewModel(analytics, notificationScheduler)
 
     fun provideInsightsViewModel() =
         InsightsViewModel(insightsRepository, reflectionRepository, interactionRepository)

@@ -3,6 +3,7 @@ package com.desktop.lumi.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desktop.lumi.analytics.Analytics
+import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
 import com.desktop.lumi.domain.model.Interaction
 import com.desktop.lumi.domain.repository.InteractionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,8 @@ import kotlin.time.ExperimentalTime
 
 class InteractionViewModel(
     private val interactionRepository: InteractionRepository,
-    private val analytics: Analytics? = null
+    private val analytics: Analytics? = null,
+    private val scheduler: NotificationScheduler?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InteractionUiState())
@@ -44,6 +46,7 @@ class InteractionViewModel(
                 moodEffect = state.moodEffect,
                 timestamp = now
             )
+            scheduler?.scheduleStreakNudge()
 
             interactionRepository.saveInteraction(interaction)
             

@@ -8,7 +8,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.desktop.lumi.db.com.desktop.lumi.message.VoidScreen
-import com.desktop.lumi.db.com.desktop.lumi.message.VoidViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.DailyReflectionScreen
@@ -31,6 +30,7 @@ import com.desktop.lumi.script.viewmodel.ScriptViewModel
 import com.desktop.lumi.settings.SettingsScreen
 import com.desktop.lumi.settings.SettingsViewModel
 import com.desktop.lumi.sos.presentation.SosScreen
+import com.desktop.lumi.void.VoidViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -46,17 +46,13 @@ fun AppNavHost(
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
     onRequestPermission: () -> Unit,
+    onRequestReview: () -> Unit // ⬅ NEW: Review Callback
 ) {
     val current = homeViewModel.currentScreen.collectAsStateWithLifecycle().value
-
-    // Global BackHandler strategy isn't possible because destinations vary.
-    // We apply it per screen.
 
     when (current) {
 
         is Screen.OnboardingName -> {
-            // If from settings, back goes to settings.
-            // If initial launch, back exits the app (default behavior, so enabled = false).
             BackHandler(enabled = current.fromSettings) {
                 homeViewModel.setCurrentScreen(Screen.Settings)
             }
@@ -74,7 +70,6 @@ fun AppNavHost(
         }
 
         is Screen.OnboardingType -> {
-            // IMPROVED: Back goes to previous step (Name) if initial flow
             BackHandler {
                 if (current.fromSettings) {
                     homeViewModel.setCurrentScreen(Screen.Settings)
@@ -99,7 +94,6 @@ fun AppNavHost(
         }
 
         is Screen.OnboardingReminder -> {
-            // IMPROVED: Back goes to previous step (Relationship) if initial flow
             BackHandler {
                 if (current.fromSettings) {
                     homeViewModel.setCurrentScreen(Screen.Settings)
@@ -129,11 +123,12 @@ fun AppNavHost(
         }
 
         Screen.Home -> {
-
             val state = homeViewModel.uiState.collectAsStateWithLifecycle().value
+            val orbitState = orbitViewModel.uiState.collectAsStateWithLifecycle().value
+
             HomeScreen(
                 uiState = state,
-                orbitState = orbitViewModel.uiState.collectAsStateWithLifecycle().value,
+                orbitState = orbitState,
                 onLogReflection = { homeViewModel.setCurrentScreen(Screen.Reflection) },
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
@@ -148,15 +143,13 @@ fun AppNavHost(
         }
 
         Screen.SOS -> {
-            // Back from SOS resets the state and goes Home
             BackHandler {
                 sosViewModel.reset()
                 homeViewModel.setCurrentScreen(Screen.Home)
             }
 
-            // Track SOS started when screen is first shown (only once)
             LaunchedEffect(Unit) {
-                sosViewModel.onSosStarted()
+                sosViewModel.onSosStarted() // Ensure this exists in SOS VM analytics
             }
 
             val state by sosViewModel.step.collectAsState()
@@ -262,12 +255,23 @@ fun AppNavHost(
 
         Screen.Void -> {
             BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            val reviewTrigger by voidViewModel.reviewEvent.collectAsStateWithLifecycle()
+            LaunchedEffect(reviewTrigger) {
+                if (reviewTrigger) {
+                    onRequestReview()
+                    voidViewModel.onReviewShown()
+                }
+            }
+
             VoidScreen(
                 state = voidViewModel.uiState.collectAsStateWithLifecycle().value,
                 onMessageChange = voidViewModel::onMessageChange,
-                onRelease = voidViewModel::onRelease, onBack = {
+                onRelease = voidViewModel::onRelease,
+                onBack = {
                     homeViewModel.setCurrentScreen(Screen.Home)
-                })
+                }
+            )
         }
 
         Screen.Scripts -> {
@@ -283,6 +287,15 @@ fun AppNavHost(
 
         Screen.Orbit -> {
             BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            // Observe the review event
+            val reviewTrigger by orbitViewModel.reviewEvent.collectAsStateWithLifecycle()
+            LaunchedEffect(reviewTrigger) {
+                if (reviewTrigger) {
+                    onRequestReview()
+                    orbitViewModel.onReviewShown()
+                }
+            }
 
             val state = orbitViewModel.uiState.collectAsStateWithLifecycle().value
             OrbitScreen(
