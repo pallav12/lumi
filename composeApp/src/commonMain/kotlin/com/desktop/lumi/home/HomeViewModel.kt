@@ -26,13 +26,17 @@ class HomeViewModel(
     private val insightEngine: InsightEngine
 ) : ViewModel() {
 
-    private val _currentScreen = MutableStateFlow<Screen>(Screen.OnboardingName())
+    private val _currentScreen = MutableStateFlow<Screen>(Screen.Home)
     val currentScreen: StateFlow<Screen> = _currentScreen
+    
+    // Track if screen was set externally (e.g., via deep link)
+    private var screenSetExternally = false
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
+        println("Init called")
         determineInitialScreen()
         observePerson()
         observeTodayReflection()
@@ -60,16 +64,20 @@ class HomeViewModel(
             personRepository.getPerson()
                 .take(1) // Only check once
                 .collect { person ->
-                    _currentScreen.value = if (person == null) {
-                        Screen.OnboardingName()
-                    } else {
-                        Screen.Home
+                    // Only set initial screen if it hasn't been set externally (e.g., via deep link)
+                    if (!screenSetExternally) {
+                        _currentScreen.value = if (person == null) {
+                            Screen.OnboardingName()
+                        } else {
+                            Screen.Home
+                        }
                     }
                 }
         }
     }
 
     fun setCurrentScreen(screen: Screen) {
+        screenSetExternally = true
         _currentScreen.value = screen
     }
 

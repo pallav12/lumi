@@ -10,6 +10,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import com.desktop.lumi.analytics.Analytics
 import com.desktop.lumi.common.App
@@ -29,6 +31,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private val reviewManager by lazy { AndroidReviewManager(this, Analytics()) }
+    
+    // Shared state for deep links that can be updated from onNewIntent
+    private val deepLinkState = mutableStateOf<String?>(null)
+    
+    // Cache ViewModels to prevent recreation on recomposition
+    private val homeViewModel by lazy { appModule.provideHomeViewModel() }
+    private val onboardingViewModel by lazy { appModule.provideOnboardingViewModel() }
+    private val reflectionViewModel by lazy { appModule.provideReflectionViewModel() }
+    private val interactionViewModel by lazy { appModule.provideInteractionViewModel() }
+    private val insightsViewModel by lazy { appModule.provideInsightsViewModel() }
+    private val sosViewModel by lazy { appModule.provideSoSViewModel() }
+    private val voidViewModel by lazy { appModule.provideVoidViewModel() }
+    private val scriptViewModel by lazy { appModule.provideScriptViewModel() }
+    private val orbitViewModel by lazy { appModule.provideOrbitViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -40,9 +56,12 @@ class MainActivity : ComponentActivity() {
             scheduler = scheduler
         )
 
-        val deepLinkDestination = intent?.getStringExtra("navigation_route")
+        val initialDeepLink = intent?.getStringExtra("navigation_route")
+        deepLinkState.value = initialDeepLink
 
         setContent {
+            // Use the shared state that can be updated from onNewIntent
+            val deepLinkDestination by deepLinkState
 
             val notificationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
@@ -63,19 +82,20 @@ class MainActivity : ComponentActivity() {
             }
 
             App(
-                homeViewModel = appModule.provideHomeViewModel(),
-                onboardingViewModel = appModule.provideOnboardingViewModel(),
-                reflectionViewModel = appModule.provideReflectionViewModel(),
-                interactionViewModel = appModule.provideInteractionViewModel(),
-                insightsViewModel = appModule.provideInsightsViewModel(),
+                homeViewModel = homeViewModel,
+                onboardingViewModel = onboardingViewModel,
+                reflectionViewModel = reflectionViewModel,
+                interactionViewModel = interactionViewModel,
+                insightsViewModel = insightsViewModel,
                 settingsViewModel = settingsViewModel,
-                sosViewModel = appModule.provideSoSViewModel(),
-                voidViewModel = appModule.provideVoidViewModel(),
-                scriptViewModel = appModule.provideScriptViewModel(),
+                sosViewModel = sosViewModel,
+                voidViewModel = voidViewModel,
+                scriptViewModel = scriptViewModel,
                 onRequestNotificationPermission = requestNotificationPermission,
-                orbitViewModel = appModule.provideOrbitViewModel(),
+                orbitViewModel = orbitViewModel,
                 onRequestReview = { reviewManager.tryRequestReview(this) },
-                deepLinkDestination = deepLinkDestination // ⬅ Pass the route
+                deepLinkDestination = deepLinkDestination, // ⬅ Pass the route
+                onDeepLinkHandled = { deepLinkState.value = null } // Clear after handling
             )
         }
     }
@@ -83,5 +103,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        // Update the shared state to trigger recomposition
+        deepLinkState.value = intent.getStringExtra("navigation_route")
     }
 }

@@ -28,18 +28,22 @@ fun App(
     orbitViewModel: OrbitViewModel,
     onRequestNotificationPermission: () -> Unit,
     onRequestReview: () -> Unit,
-    deepLinkDestination: String? = null
+    deepLinkDestination: String? = null,
+    onDeepLinkHandled: () -> Unit = {}
 ) {
     LaunchedEffect(deepLinkDestination) {
         if (deepLinkDestination != null) {
+            // Small delay to ensure initial screen determination doesn't override
+            kotlinx.coroutines.delay(100)
             when (deepLinkDestination) {
-                "orbit" -> homeViewModel.setCurrentScreen(Screen.Home) // Or Screen.Orbit if you want to open it directly? Home handles orbit banner.
+                "sos" -> homeViewModel.setCurrentScreen(Screen.SOS)
+                "orbit" -> homeViewModel.setCurrentScreen(Screen.Orbit)
                 "void" -> homeViewModel.setCurrentScreen(Screen.Void)
                 "insights" -> homeViewModel.setCurrentScreen(Screen.Insights)
                 "streak" -> homeViewModel.setCurrentScreen(Screen.Home)
-                // Add logic to open OrbitScreen directly if needed:
-                // "orbit" -> { homeViewModel.setCurrentScreen(Screen.Home); /* trigger orbit open */ }
             }
+            // Clear the deep link after handling to prevent re-triggering
+            onDeepLinkHandled()
         }
     }
 
