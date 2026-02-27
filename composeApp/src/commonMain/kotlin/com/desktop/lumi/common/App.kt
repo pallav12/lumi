@@ -3,6 +3,7 @@ package com.desktop.lumi.common
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
 import com.desktop.lumi.home.presentation.InteractionViewModel
@@ -26,6 +27,7 @@ fun App(
     voidViewModel: VoidViewModel,
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
+    anchorViewModel: AnchorViewModel,
     onRequestNotificationPermission: () -> Unit,
     onRequestReview: () -> Unit,
     deepLinkDestination: String? = null,
@@ -59,6 +61,7 @@ fun App(
             voidViewModel = voidViewModel,
             scriptViewModel = scriptViewModel,
             orbitViewModel = orbitViewModel,
+            anchorViewModel = anchorViewModel,
             onRequestPermission = onRequestNotificationPermission,
             onRequestReview = onRequestReview
         )

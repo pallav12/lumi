@@ -7,6 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desktop.lumi.anchor.presentation.AddAnchorScreen
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorViewModel
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.compose.AnchorDeckScreen
 import com.desktop.lumi.db.com.desktop.lumi.message.VoidScreen
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
@@ -19,6 +22,7 @@ import com.desktop.lumi.home.presentation.ReflectionViewModel
 import com.desktop.lumi.insights.InsightsScreen
 import com.desktop.lumi.insights.InsightsViewModel
 import com.desktop.lumi.insights.TimelineScreen
+import com.desktop.lumi.lovejar.compose.AnchorLibraryScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingNameScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingRelationshipTypeScreen
 import com.desktop.lumi.onboarding.presentation.composable.OnboardingReminderTimeScreen
@@ -45,6 +49,7 @@ fun AppNavHost(
     voidViewModel: VoidViewModel,
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
+    anchorViewModel: AnchorViewModel,
     onRequestPermission: () -> Unit,
     onRequestReview: () -> Unit // ⬅ NEW: Review Callback
 ) {
@@ -138,7 +143,8 @@ fun AppNavHost(
                 onOpenSOS = { homeViewModel.setCurrentScreen(Screen.SOS) },
                 onOpenVoid = { homeViewModel.setCurrentScreen(Screen.Void) },
                 onOpenScripts = { homeViewModel.setCurrentScreen(Screen.Scripts) },
-                onOpenOrbit = { homeViewModel.setCurrentScreen(Screen.Orbit) }
+                onOpenOrbit = { homeViewModel.setCurrentScreen(Screen.Orbit) },
+                onOpenAnchor = { homeViewModel.setCurrentScreen(Screen.AnchorList) }
             )
         }
 
@@ -305,6 +311,39 @@ fun AppNavHost(
                 onFinish = orbitViewModel::finishOrbit,
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) },
                 onGoToSOS = { homeViewModel.setCurrentScreen(Screen.SOS) }
+            )
+        }
+
+        Screen.AnchorList -> {
+            BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            AnchorLibraryScreen(
+                anchorViewModel.entries.collectAsStateWithLifecycle().value,
+                anchorViewModel.randomEntry.collectAsStateWithLifecycle().value,
+                anchorViewModel::pullRandomAnchor,
+                { homeViewModel.setCurrentScreen(Screen.AnchorAdd) },
+                anchorViewModel::clearRandomAnchor,
+                anchorViewModel::deleteEntry,
+                {
+                    homeViewModel.setCurrentScreen(Screen.Home)
+                }
+            )
+        }
+
+        Screen.AnchorAdd -> {
+            BackHandler { homeViewModel.setCurrentScreen(Screen.AnchorList) }
+
+            val state = anchorViewModel.addState.collectAsStateWithLifecycle().value
+            AddAnchorScreen(
+                state,
+                anchorViewModel::onContentChange,
+                anchorViewModel::onImagePicked,
+                { anchorViewModel.removeImage() },
+                { anchorViewModel.saveEntry() },
+                {
+                    homeViewModel.setCurrentScreen(Screen.AnchorList)
+                    anchorViewModel.resetAddState()
+                 }
             )
         }
     }

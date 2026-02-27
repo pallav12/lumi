@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
     private val reflectionViewModel by lazy { appModule.provideReflectionViewModel() }
     private val interactionViewModel by lazy { appModule.provideInteractionViewModel() }
     private val insightsViewModel by lazy { appModule.provideInsightsViewModel() }
+    private val anchorViewModel by lazy { appModule.provideAnchorViewModel() }
     private val sosViewModel by lazy { appModule.provideSoSViewModel() }
     private val voidViewModel by lazy { appModule.provideVoidViewModel() }
     private val scriptViewModel by lazy { appModule.provideScriptViewModel() }
@@ -93,6 +94,7 @@ class MainActivity : ComponentActivity() {
                 scriptViewModel = scriptViewModel,
                 onRequestNotificationPermission = requestNotificationPermission,
                 orbitViewModel = orbitViewModel,
+                anchorViewModel = anchorViewModel,
                 onRequestReview = { reviewManager.tryRequestReview(this) },
                 deepLinkDestination = deepLinkDestination, // ⬅ Pass the route
                 onDeepLinkHandled = { deepLinkState.value = null } // Clear after handling

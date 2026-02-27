@@ -15,6 +15,8 @@ sealed class Screen {
     data object Void : Screen()
     data object Scripts : Screen()
     data object Orbit : Screen()
+    data object AnchorList: Screen()
+    data object AnchorAdd: Screen()
 }
 
 

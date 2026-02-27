@@ -1,0 +1,27 @@
+CREATE TABLE anchor (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    image_uri TEXT,
+    timestamp INTEGER NOT NULL,
+    tags TEXT -- Comma separated tags like "#safe,#love"
+);
+
+insertEntry:
+INSERT INTO anchor(content, image_uri, timestamp, tags)
+VALUES (?, ?, ?, ?);
+
+getAllEntries:
+SELECT * FROM anchor
+ORDER BY timestamp DESC;
+
+getRandomEntry:
+SELECT * FROM anchor
+ORDER BY RANDOM()
+LIMIT 1;
+
+deleteEntry:
+DELETE FROM anchor
+WHERE id = ?;
+
+getEntriesCount:
+SELECT COUNT(*) FROM anchor;

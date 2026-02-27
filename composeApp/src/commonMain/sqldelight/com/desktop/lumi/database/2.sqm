@@ -1,0 +1,10 @@
+-- Migration from Version 2 to Version 3
+
+-- Create the Anchor table (formerly Love Jar)
+CREATE TABLE anchor_entry (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    image_uri TEXT,
+    timestamp INTEGER NOT NULL,
+    tags TEXT -- Comma separated tags like "#safe,#love"
+);

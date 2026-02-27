@@ -8,6 +8,9 @@ import com.desktop.lumi.data.repository.ReflectionRepositoryImpl
 import com.desktop.lumi.db.AppDatabase
 import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorRepository
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorRepositoryImpl
+import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.domain.repository.InsightsRepository
 import com.desktop.lumi.domain.repository.InteractionRepository
@@ -39,6 +42,7 @@ class AppModule(
     val insightsRepository: InsightsRepository = InsightsRepositoryImpl(reflectionRepository)
     val insightsEngine = InsightEngine()
     val orbitReflectionRepository: OrbitRepository = OrbitRepositoryImpl(database)
+    val anchorRepositoryImpl: AnchorRepository = AnchorRepositoryImpl(database)
 
     // ViewModels
     fun provideHomeViewModel() = HomeViewModel(
@@ -54,6 +58,8 @@ class AppModule(
         notificationScheduler,
         analytics
     )
+
+    fun provideAnchorViewModel() = AnchorViewModel(anchorRepositoryImpl, analytics)
 
     fun provideReflectionViewModel() = ReflectionViewModel(
         reflectionRepository,

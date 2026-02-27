@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.coroutines.extensions)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(libs.coil.compose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.sqldelight.runtime) // ❗ SQLDelight runtime
@@ -67,7 +68,7 @@ kotlin {
 sqldelight {
     database("AppDatabase") {
         packageName = "com.desktop.lumi.db"
-        version = 2
+        version = 5
     }
 }
 
@@ -79,8 +80,8 @@ android {
         applicationId = "com.desktop.lumi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 8
-        versionName = "2.5"
+        versionCode = 10
+        versionName = "3.0"
     }
 
     packaging {

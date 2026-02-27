@@ -13,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Anchor
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.HourglassEmpty
@@ -52,6 +52,7 @@ private val SOSColor = Color(0xFFE57373)
 private val VoidColor = Color(0xFF2D1B4E)
 private val ScriptColor = Color(0xFF5E548E)
 private val OrbitColor = Color(0xFF0F172A)
+private val AnchorColor = Color(0xFFD4A373) // Warm Gold/Brown for Anchor
 private val SpaceDark = Color(0xFF0F172A) // Matches Orbit Palette
 private val TextLight = Color(0xFFF1F5F9)
 
@@ -69,7 +70,8 @@ fun HomeScreen(
     onOpenSOS: () -> Unit,
     onOpenVoid: () -> Unit,
     onOpenScripts: () -> Unit,
-    onOpenOrbit: () -> Unit
+    onOpenOrbit: () -> Unit,
+    onOpenAnchor: () -> Unit // ⬅ NEW Callback
 ) {
     // Sanctuary Mode Logic
     val isSanctuaryMode = orbitState?.isActive == true && !orbitState.isCompleted
@@ -158,7 +160,7 @@ fun HomeScreen(
                     onLogInteraction = onLogInteraction,
                     onOpenInsights = onOpenInsights,
                     isLocked = isSanctuaryMode,
-                    textColor = textColor // ⬅ FIX: Pass correct text color
+                    textColor = textColor
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -166,10 +168,11 @@ fun HomeScreen(
                 // 6. Sanctuary Tools
                 SanctuaryToolsSection(
                     orbitState = orbitState,
-                    headerColor = textColor, // ⬅ FIX: Pass correct text color
+                    headerColor = textColor,
                     onOpenVoid = onOpenVoid,
                     onOpenOrbit = onOpenOrbit,
-                    onOpenScripts = onOpenScripts
+                    onOpenScripts = onOpenScripts,
+                    onOpenAnchor = onOpenAnchor // ⬅ Pass it
                 )
 
                 Spacer(modifier = Modifier.height(48.dp))
@@ -184,7 +187,8 @@ fun HomeScreen(
     }
 }
 
-// ⬅ Active Orbit Banner
+// ... ActiveOrbitBanner, GreetingSection, SOSButton, DailyReflectionCard, WeeklyVitalsSection, StatPill, ActionGrid ... (Keep existing)
+
 @Composable
 private fun ActiveOrbitBanner(orbitState: OrbitViewModel.OrbitState, onClick: () -> Unit) {
     Card(
@@ -334,7 +338,7 @@ private fun DailyReflectionCard(
                 Text(
                     text = "Track the ups and downs",
                     style = MaterialTheme.typography.bodySmall,
-                    color = secondaryTextColor
+                    color = secondaryTextColor // Keep this readable
                 )
             }
         }
@@ -455,7 +459,7 @@ private fun ActionGrid(
     onLogInteraction: () -> Unit,
     onOpenInsights: () -> Unit,
     isLocked: Boolean,
-    textColor: Color // ⬅ NEW Parameter
+    textColor: Color
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -468,7 +472,7 @@ private fun ActionGrid(
             onClick = onLogInteraction,
             modifier = Modifier.weight(1f),
             enabled = !isLocked,
-            textColor = textColor // ⬅ Pass it
+            textColor = textColor
         )
 
         ActionButton(
@@ -477,7 +481,7 @@ private fun ActionGrid(
             color = LumiSecondary,
             onClick = onOpenInsights,
             modifier = Modifier.weight(1f),
-            textColor = textColor // ⬅ Pass it
+            textColor = textColor
         )
     }
 }
@@ -485,24 +489,25 @@ private fun ActionGrid(
 @Composable
 private fun SanctuaryToolsSection(
     orbitState: OrbitViewModel.OrbitState?,
-    headerColor: Color, // ⬅ NEW Parameter
+    headerColor: Color,
     onOpenVoid: () -> Unit,
     onOpenOrbit: () -> Unit,
-    onOpenScripts: () -> Unit
+    onOpenScripts: () -> Unit,
+    onOpenAnchor: () -> Unit // ⬅ NEW Parameter
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
             text = "Sanctuary Tools",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = headerColor // ⬅ Use Dynamic Color
+            color = headerColor
         )
 
+        // Row 1: The "Release" Tools (Void + Anchor)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Void Card
             ToolsCard(
                 title = "The Void",
                 subtitle = "Vent safely",
@@ -512,6 +517,21 @@ private fun SanctuaryToolsSection(
                 modifier = Modifier.weight(1f)
             )
 
+            ToolsCard(
+                title = "The Anchor",
+                subtitle = "Your reality check",
+                icon = Icons.Rounded.Anchor,
+                color = AnchorColor, // ⬅ Warm Gold
+                onClick = onOpenAnchor,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 2: Maintenance Tools (Orbit + Scripts)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             // Orbit Card
             if (orbitState != null && (orbitState.isActive || orbitState.isCompleted)) {
                 val progressColor = if(orbitState.isCompleted) Color(0xFFFFD700) else Color(0xFF38BDF8)
@@ -542,7 +562,6 @@ private fun SanctuaryToolsSection(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        // Progress ring icon
                         Box(
                             modifier = Modifier.align(Alignment.TopEnd).size(32.dp),
                             contentAlignment = Alignment.Center
@@ -558,7 +577,6 @@ private fun SanctuaryToolsSection(
                     }
                 }
             } else {
-                // Default Orbit Card
                 ToolsCard(
                     title = "Detox\nOrbit",
                     subtitle = "Reclaim time",
@@ -568,20 +586,20 @@ private fun SanctuaryToolsSection(
                     modifier = Modifier.weight(1f)
                 )
             }
-        }
 
-        ToolsCard(
-            title = "Safe Scripts",
-            subtitle = "Communication templates",
-            icon = Icons.Rounded.ChatBubbleOutline,
-            color = ScriptColor,
-            onClick = onOpenScripts,
-            modifier = Modifier.fillMaxWidth(),
-            layoutHorizontal = true
-        )
+            ToolsCard(
+                title = "Safe\nScripts",
+                subtitle = "Words for you",
+                icon = Icons.Rounded.ChatBubbleOutline,
+                color = ScriptColor,
+                onClick = onOpenScripts,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
+// ... ToolsCard, ActionButton, SmoothMoodGraph ... (Keep existing)
 @Composable
 private fun ToolsCard(
     title: String,
@@ -590,11 +608,11 @@ private fun ToolsCard(
     color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    layoutHorizontal: Boolean = false
+    layoutHorizontal: Boolean = false // This flag is effectively unused now as we have a 2x2 grid, but keeping signature safe
 ) {
     Card(
         modifier = modifier
-            .height(if(layoutHorizontal) 80.dp else 110.dp)
+            .height(110.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = color),
@@ -605,59 +623,31 @@ private fun ToolsCard(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            if (layoutHorizontal) {
-                Row(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f),
-                            maxLines = 1
-                        )
-                    }
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.3f),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        lineHeight = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 1
-                    )
-                }
-
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.3f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(32.dp)
+            Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    lineHeight = 20.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.7f),
+                    maxLines = 1
                 )
             }
+
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.3f),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(32.dp)
+            )
         }
     }
 }
@@ -670,7 +660,7 @@ private fun ActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    textColor: Color = TextPrimary // ⬅ NEW Default
+    textColor: Color = TextPrimary
 ) {
     Card(
         modifier = modifier
@@ -697,14 +687,13 @@ private fun ActionButton(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (enabled) textColor else Color.Gray, // ⬅ Use dynamic color
+                color = if (enabled) textColor else Color.Gray,
                 modifier = Modifier.align(Alignment.BottomStart)
             )
         }
     }
 }
 
-// ... SmoothMoodGraph, getMoodEmoji, Preview ... (Keep existing)
 @Composable
 private fun SmoothMoodGraph(
     moodPoints: List<Int>,
@@ -782,7 +771,7 @@ fun NewHomePreview() {
                     negativeCount = 4
                 )
             ), OrbitViewModel.OrbitState(),
-             {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
         )
     }
 }

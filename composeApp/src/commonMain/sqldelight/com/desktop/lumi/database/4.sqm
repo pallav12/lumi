@@ -1,0 +1,15 @@
+-- Migration from Version 4 to Version 5
+
+-- 1. Clean up any previous failed attempts to avoid conflicts
+DROP TABLE IF EXISTS love_jar_entry;
+DROP TABLE IF EXISTS anchor_entry;
+DROP TABLE IF EXISTS anchor;
+
+-- 2. Create the clean Anchor table
+CREATE TABLE anchor (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    image_uri TEXT,
+    timestamp INTEGER NOT NULL,
+    tags TEXT -- Comma separated tags
+);
