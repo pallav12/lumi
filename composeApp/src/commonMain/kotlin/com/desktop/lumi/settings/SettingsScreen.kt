@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -61,11 +62,13 @@ fun SettingsScreen(
     personName: String,
     relationshipType: String,
     reminderTime: String,
+    isPremium: Boolean = false,
     onEditName: () -> Unit,
     onEditRelationshipType: () -> Unit,
     onEditReminderTime: () -> Unit,
     onToggleNotifications: (Boolean) -> Unit,
     notificationsEnabled: Boolean,
+    onOpenPaywall: () -> Unit = {},
     onBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -163,9 +166,23 @@ fun SettingsScreen(
                 }
             }
 
+            // Section 3: Premium (only show if not already premium)
+            if (!isPremium) {
+                Spacer(modifier = Modifier.height(32.dp))
+                SettingsSectionTitle("Premium")
+                SettingsCard {
+                    SettingsItem(
+                        icon = Icons.Rounded.AutoAwesome,
+                        label = "Unlock Premium",
+                        value = "Lifetime",
+                        onClick = onOpenPaywall
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Section 3: Privacy (Visual Placeholder for MVP)
+            // Section 4: Privacy
             SettingsSectionTitle("About")
             SettingsCard {
                 SettingsItem(

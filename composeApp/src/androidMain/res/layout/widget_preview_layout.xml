@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static preview for widget picker - mimics Lumi widget appearance -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_gradient_background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lumi ✨"
+            android:textColor="#FFFFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Your digital sanctuary."
+            android:textColor="#FFE8E0F5"
+            android:textSize="12sp" />
+
+        <!-- Action buttons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/widget_preview_btn_sos"
+                android:gravity="center"
+                android:text="🆘\nSOS"
+                android:textColor="#FFFFFFFF"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="6dp"
+                android:background="@drawable/widget_preview_btn_void"
+                android:gravity="center"
+                android:text="☁️\nVoid"
+                android:textColor="#FFFFFFFF"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/widget_preview_btn_orbit"
+                android:gravity="center"
+                android:text="🪐\nOrbit"
+                android:textColor="#FFFFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Open Sanctuary button -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/widget_preview_btn_open"
+            android:gravity="center"
+            android:text="Open Sanctuary"
+            android:textColor="#FFE8DDF5"
+            android:textSize="13sp" />
+    </LinearLayout>
+</FrameLayout>

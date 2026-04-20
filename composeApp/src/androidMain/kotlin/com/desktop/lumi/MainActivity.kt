@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
@@ -82,6 +83,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            // Fetch billing state once on launch
+            LaunchedEffect(Unit) {
+                appModule.billingManager.refreshEntitlementStatus()
+                appModule.billingManager.fetchOfferings()
+            }
+
             App(
                 homeViewModel = homeViewModel,
                 onboardingViewModel = onboardingViewModel,
@@ -95,9 +102,10 @@ class MainActivity : ComponentActivity() {
                 onRequestNotificationPermission = requestNotificationPermission,
                 orbitViewModel = orbitViewModel,
                 anchorViewModel = anchorViewModel,
+                billingManager = appModule.billingManager,
                 onRequestReview = { reviewManager.tryRequestReview(this) },
-                deepLinkDestination = deepLinkDestination, // ⬅ Pass the route
-                onDeepLinkHandled = { deepLinkState.value = null } // Clear after handling
+                deepLinkDestination = deepLinkDestination,
+                onDeepLinkHandled = { deepLinkState.value = null }
             )
         }
     }

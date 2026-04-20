@@ -13,7 +13,8 @@ import kotlin.time.ExperimentalTime
 
 class AnchorViewModel(
     private val repository: AnchorRepository,
-    private val analytics: Analytics?
+    private val analytics: Analytics?,
+    private val billingManager: com.desktop.lumi.billing.BillingManager? = null
 ) : ViewModel() {
 
     // --- Library State (All Entries for the Gallery) ---
@@ -77,6 +78,13 @@ class AnchorViewModel(
         if (state.content.isBlank() && state.imageUri == null) return
 
         viewModelScope.launch {
+            // Defense-in-depth: block save if free tier limit reached
+            val bm = billingManager
+            if (bm != null) {
+                val count = repository.getEntryCount()
+                if (!bm.canAddAnchor(count)) return@launch
+            }
+
             repository.addEntry(
                 AnchorEntry(
                     content = state.content,

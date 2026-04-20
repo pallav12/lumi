@@ -3,6 +3,7 @@ package com.desktop.lumi.common
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.desktop.lumi.billing.BillingManager
 import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorViewModel
 import com.desktop.lumi.db.com.desktop.lumi.sos.SosViewModel
 import com.desktop.lumi.home.HomeViewModel
@@ -28,6 +29,7 @@ fun App(
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
     anchorViewModel: AnchorViewModel,
+    billingManager: BillingManager,
     onRequestNotificationPermission: () -> Unit,
     onRequestReview: () -> Unit,
     deepLinkDestination: String? = null,
@@ -62,6 +64,7 @@ fun App(
             scriptViewModel = scriptViewModel,
             orbitViewModel = orbitViewModel,
             anchorViewModel = anchorViewModel,
+            billingManager = billingManager,
             onRequestPermission = onRequestNotificationPermission,
             onRequestReview = onRequestReview
         )

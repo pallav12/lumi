@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,15 +46,18 @@ private val ChipSelected = Color(0xFFE0DDF5)
 @Composable
 fun PreviewScriptLibraryScreen() {
     ScriptLibraryScreen(
-        ScriptViewModel.UiState(selectedCategory = ScriptCategory.IGNORED),
-        {},
-        {})
+        state = ScriptViewModel.UiState(selectedCategory = ScriptCategory.IGNORED),
+        onCategorySelect = {},
+        onBack = {}
+    )
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScriptLibraryScreen(
     state: ScriptViewModel.UiState,
+    isPremium: Boolean = false,
     onCategorySelect: (ScriptCategory) -> Unit,
+    onOpenPaywall: () -> Unit = {},
     onBack: () -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -128,14 +133,24 @@ fun ScriptLibraryScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(state.visibleScripts) { script ->
-                        ScriptCard(
-                            script = script,
-                            isCopied = lastCopiedScript == script.content,
-                            onCopy = {
-                                clipboardManager.setText(AnnotatedString(script.content))
-                                lastCopiedScript = script.content
-                            }
-                        )
+                        val isFreeScript = script.title in ScriptViewModel.FREE_SCRIPT_TITLES
+                        val isLocked = !isPremium && !isFreeScript
+
+                        if (isLocked) {
+                            LockedScriptCard(
+                                script = script,
+                                onTap = onOpenPaywall
+                            )
+                        } else {
+                            ScriptCard(
+                                script = script,
+                                isCopied = lastCopiedScript == script.content,
+                                onCopy = {
+                                    clipboardManager.setText(AnnotatedString(script.content))
+                                    lastCopiedScript = script.content
+                                }
+                            )
+                        }
                     }
 
                     // Bottom padding
@@ -242,6 +257,65 @@ private fun ScriptCard(
 }
 
 private data class ToneColor(val container: Color, val content: Color)
+
+@Composable
+private fun LockedScriptCard(
+    script: SafeScript,
+    onTap: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = LumiSurface.copy(alpha = 0.6f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onTap() }
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val toneColors = getToneColors(script.tone)
+                Surface(
+                    color = toneColors.container.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = script.tone.uppercase(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = toneColors.content.copy(alpha = 0.5f)
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Rounded.Lock,
+                    contentDescription = "Premium",
+                    tint = LumiPrimary.copy(alpha = 0.6f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = script.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary.copy(alpha = 0.4f)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Unlock Premium to read this script",
+                style = MaterialTheme.typography.bodyMedium,
+                color = LumiPrimary.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
 
 private fun getToneColors(tone: String): ToneColor {
     return when (tone) {

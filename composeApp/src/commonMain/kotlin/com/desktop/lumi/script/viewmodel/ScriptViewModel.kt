@@ -95,6 +95,15 @@ class ScriptViewModel : ViewModel() {
         )
     )
 
+    companion object {
+        /** Indices of the 3 scripts free users can access. */
+        val FREE_SCRIPT_TITLES = setOf(
+            "The Soft Check-in",  // IGNORED - Soft
+            "Simple Ask",         // REASSURANCE - Soft
+            "Time out"            // BOUNDARIES - Direct
+        )
+    }
+
     data class UiState(
         val selectedCategory: ScriptCategory = ScriptCategory.IGNORED,
         val visibleScripts: List<SafeScript> = emptyList()

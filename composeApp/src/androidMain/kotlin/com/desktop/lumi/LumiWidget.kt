@@ -2,6 +2,7 @@ package com.desktop.lumi.widget
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -188,12 +189,15 @@ class LumiWidget : GlanceAppWidget() {
         contentColor: ColorProvider,
         modifier: GlanceModifier = GlanceModifier
     ) {
-        // Create explicit Intent with proper flags for widget clicks
+        // Create explicit Intent with proper flags for widget clicks.
+        // Use a unique data URI per route so PendingIntents are not conflated (Intent.filterEquals
+        // ignores extras). Otherwise the trampoline can receive a null/wrong target and crash.
         val intent = Intent().apply {
             setClassName(
                 "com.desktop.lumi",
                 "com.desktop.lumi.MainActivity"
             )
+            data = Uri.parse("lumi://widget/action/$route")
             putExtra("navigation_route", route)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or

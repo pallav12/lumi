@@ -1,6 +1,7 @@
 package com.desktop.lumi.db.com.desktop.lumi.di
 
 import com.desktop.lumi.analytics.Analytics
+import com.desktop.lumi.billing.BillingManager
 import com.desktop.lumi.data.repository.InsightsRepositoryImpl
 import com.desktop.lumi.data.repository.InteractionRepositoryImpl
 import com.desktop.lumi.data.repository.PersonRepositoryImpl
@@ -31,7 +32,8 @@ import com.desktop.lumi.void.VoidViewModel
 class AppModule(
     driverFactory: DatabaseDriverFactory,
     private val notificationScheduler: NotificationScheduler? = null,
-    private val analytics: Analytics? = null
+    private val analytics: Analytics? = null,
+    val billingManager: BillingManager = BillingManager()
 ) {
     val database: AppDatabase = AppDatabase(driverFactory.createDriver())
 
@@ -59,7 +61,7 @@ class AppModule(
         analytics
     )
 
-    fun provideAnchorViewModel() = AnchorViewModel(anchorRepositoryImpl, analytics)
+    fun provideAnchorViewModel() = AnchorViewModel(anchorRepositoryImpl, analytics, billingManager)
 
     fun provideReflectionViewModel() = ReflectionViewModel(
         reflectionRepository,

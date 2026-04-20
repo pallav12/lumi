@@ -17,6 +17,7 @@ sealed class Screen {
     data object Orbit : Screen()
     data object AnchorList: Screen()
     data object AnchorAdd: Screen()
+    data object Paywall: Screen()
 }
 
 

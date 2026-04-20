@@ -2,6 +2,7 @@ package com.desktop.lumi.insights
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.SentimentDissatisfied
 import androidx.compose.material.icons.rounded.SentimentSatisfied
 import androidx.compose.material3.*
@@ -46,6 +48,8 @@ fun InsightsScreen(
     insights: List<String>,
     positiveCount: Int,
     negativeCount: Int,
+    isPremium: Boolean = false,
+    onOpenPaywall: () -> Unit = {},
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -112,9 +116,16 @@ fun InsightsScreen(
                         )
                     }
 
-                    // 3. Wisdom Cards
-                    items(insights) { insight ->
-                        InsightCard(insight = insight)
+                    if (isPremium) {
+                        // 3. Wisdom Cards — premium content
+                        items(insights) { insight ->
+                            InsightCard(insight = insight)
+                        }
+                    } else {
+                        // Free tier — show premium CTA instead of patterns
+                        item {
+                            PremiumInsightsCTA(onClick = onOpenPaywall)
+                        }
                     }
                 }
             }
@@ -289,6 +300,59 @@ private fun EmptyState() {
                 text = "Log a few interactions to unlock insights.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PremiumInsightsCTA(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = LumiPrimary.copy(alpha = 0.08f)),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(LumiPrimary.copy(alpha = 0.15f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.Lock,
+                    contentDescription = null,
+                    tint = LumiPrimary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Unlock Behavioral Insights",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Discover patterns like \"You're most anxious on Sunday evenings\" with Lumi Premium.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                lineHeight = 20.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Learn More",
+                color = LumiPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
             )
         }
     }

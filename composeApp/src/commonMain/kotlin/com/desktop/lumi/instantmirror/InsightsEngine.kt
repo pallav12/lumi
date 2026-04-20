@@ -49,7 +49,7 @@ class InsightEngine {
         // Filter logs within the spiral window (e.g., last 90 mins)
         val recentLogs = history.filter {
             val logTime = Instant.fromEpochMilliseconds(it.timestamp)
-            (now - logTime.epochSeconds) < (SPIRAL_WINDOW_MINUTES * 60)
+            (now - logTime.toEpochMilliseconds()) < (SPIRAL_WINDOW_MINUTES * 60 * 1000)
         }
 
         // If user logged 3+ times quickly and mood is NOT getting better

@@ -4,10 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.BackHandler
+import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.desktop.lumi.anchor.presentation.AddAnchorScreen
+import com.desktop.lumi.billing.BillingManager
+import com.desktop.lumi.billing.PaywallScreen
 import com.desktop.lumi.db.com.desktop.lumi.lovejar.AnchorViewModel
 import com.desktop.lumi.db.com.desktop.lumi.lovejar.compose.AnchorDeckScreen
 import com.desktop.lumi.db.com.desktop.lumi.message.VoidScreen
@@ -50,10 +54,13 @@ fun AppNavHost(
     scriptViewModel: ScriptViewModel,
     orbitViewModel: OrbitViewModel,
     anchorViewModel: AnchorViewModel,
+    billingManager: BillingManager,
     onRequestPermission: () -> Unit,
-    onRequestReview: () -> Unit // ⬅ NEW: Review Callback
+    onRequestReview: () -> Unit
 ) {
     val current = homeViewModel.currentScreen.collectAsStateWithLifecycle().value
+    val billingState by billingManager.state.collectAsStateWithLifecycle()
+    val isPremium = billingState.isPremium
 
     when (current) {
 
@@ -134,6 +141,7 @@ fun AppNavHost(
             HomeScreen(
                 uiState = state,
                 orbitState = orbitState,
+                isPremium = isPremium,
                 onLogReflection = { homeViewModel.setCurrentScreen(Screen.Reflection) },
                 onLogInteraction = { homeViewModel.setCurrentScreen(Screen.Interaction) },
                 onOpenInsights = { homeViewModel.setCurrentScreen(Screen.Insights) },
@@ -144,7 +152,8 @@ fun AppNavHost(
                 onOpenVoid = { homeViewModel.setCurrentScreen(Screen.Void) },
                 onOpenScripts = { homeViewModel.setCurrentScreen(Screen.Scripts) },
                 onOpenOrbit = { homeViewModel.setCurrentScreen(Screen.Orbit) },
-                onOpenAnchor = { homeViewModel.setCurrentScreen(Screen.AnchorList) }
+                onOpenAnchor = { homeViewModel.setCurrentScreen(Screen.AnchorList) },
+                onOpenPaywall = { homeViewModel.setCurrentScreen(Screen.Paywall) }
             )
         }
 
@@ -229,6 +238,8 @@ fun AppNavHost(
                 insights = state.insights,
                 positiveCount = state.positiveCount,
                 negativeCount = state.negativeCount,
+                isPremium = isPremium,
+                onOpenPaywall = { homeViewModel.setCurrentScreen(Screen.Paywall) },
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )
         }
@@ -241,11 +252,13 @@ fun AppNavHost(
                 personName = state.personName,
                 relationshipType = state.relationshipType,
                 reminderTime = state.reminderTime,
+                isPremium = isPremium,
                 onEditName = { homeViewModel.setCurrentScreen(Screen.OnboardingName(true)) },
                 onEditRelationshipType = { homeViewModel.setCurrentScreen(Screen.OnboardingType(true)) },
                 onEditReminderTime = { homeViewModel.setCurrentScreen(Screen.OnboardingReminder(true)) },
                 onToggleNotifications = { settingsViewModel.onToggleNotifications(it) },
                 notificationsEnabled = state.notificationsEnabled,
+                onOpenPaywall = { homeViewModel.setCurrentScreen(Screen.Paywall) },
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )
         }
@@ -286,7 +299,9 @@ fun AppNavHost(
             val state = scriptViewModel.uiState.collectAsStateWithLifecycle().value
             ScriptLibraryScreen(
                 state = state,
+                isPremium = isPremium,
                 onCategorySelect = { scriptViewModel.selectCategory(it) },
+                onOpenPaywall = { homeViewModel.setCurrentScreen(Screen.Paywall) },
                 onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )
         }
@@ -317,11 +332,20 @@ fun AppNavHost(
         Screen.AnchorList -> {
             BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
 
+            val entries = anchorViewModel.entries.collectAsStateWithLifecycle().value
+
             AnchorLibraryScreen(
-                anchorViewModel.entries.collectAsStateWithLifecycle().value,
+                entries,
                 anchorViewModel.randomEntry.collectAsStateWithLifecycle().value,
                 anchorViewModel::pullRandomAnchor,
-                { homeViewModel.setCurrentScreen(Screen.AnchorAdd) },
+                {
+                    // Gate: if free user has reached limit, show paywall
+                    if (!isPremium && entries.size >= BillingManager.FREE_ANCHOR_LIMIT) {
+                        homeViewModel.setCurrentScreen(Screen.Paywall)
+                    } else {
+                        homeViewModel.setCurrentScreen(Screen.AnchorAdd)
+                    }
+                },
                 anchorViewModel::clearRandomAnchor,
                 anchorViewModel::deleteEntry,
                 {
@@ -344,6 +368,30 @@ fun AppNavHost(
                     homeViewModel.setCurrentScreen(Screen.AnchorList)
                     anchorViewModel.resetAddState()
                  }
+            )
+        }
+
+        Screen.Paywall -> {
+            BackHandler { homeViewModel.setCurrentScreen(Screen.Home) }
+
+            val scope = rememberCoroutineScope()
+
+            // If they became premium while on this screen, go back automatically
+            LaunchedEffect(isPremium) {
+                if (isPremium) {
+                    homeViewModel.setCurrentScreen(Screen.Home)
+                }
+            }
+
+            PaywallScreen(
+                billingState = billingState,
+                onPurchase = {
+                    scope.launch { billingManager.purchaseLifetime() }
+                },
+                onRestore = {
+                    scope.launch { billingManager.restorePurchases() }
+                },
+                onBack = { homeViewModel.setCurrentScreen(Screen.Home) }
             )
         }
     }

@@ -19,3 +19,4 @@ captures
 node_modules/
 .pre-commit-config.yaml
 trufflehog/
+Secrets.xcconfig

@@ -61,6 +61,7 @@ private val TextLight = Color(0xFFF1F5F9)
 fun HomeScreen(
     uiState: HomeViewModel.HomeUiState,
     orbitState: OrbitViewModel.OrbitState? = null,
+    isPremium: Boolean = false,
     onLogReflection: () -> Unit,
     onLogInteraction: () -> Unit,
     onOpenInsights: () -> Unit,
@@ -71,7 +72,8 @@ fun HomeScreen(
     onOpenVoid: () -> Unit,
     onOpenScripts: () -> Unit,
     onOpenOrbit: () -> Unit,
-    onOpenAnchor: () -> Unit // ⬅ NEW Callback
+    onOpenAnchor: () -> Unit,
+    onOpenPaywall: () -> Unit = {}
 ) {
     // Sanctuary Mode Logic
     val isSanctuaryMode = orbitState?.isActive == true && !orbitState.isCompleted
@@ -178,11 +180,19 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(48.dp))
             }
 
-            // Bottom Sheet
-            InstantInsightBottomSheet(
-                insight = uiState.instantInsight,
-                onDismiss = onDismissInsight
-            )
+            // Bottom Sheet — Instant Mirror is 100% premium
+            if (isPremium) {
+                InstantInsightBottomSheet(
+                    insight = uiState.instantInsight,
+                    onDismiss = onDismissInsight
+                )
+            } else if (uiState.instantInsight != null) {
+                // Free user got an insight → dismiss it and show paywall
+                LaunchedEffect(uiState.instantInsight) {
+                    onDismissInsight()
+                    onOpenPaywall()
+                }
+            }
         }
     }
 }
@@ -770,8 +780,8 @@ fun NewHomePreview() {
                     positiveCount = 12,
                     negativeCount = 4
                 )
-            ), OrbitViewModel.OrbitState(),
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+            ), OrbitViewModel.OrbitState(), isPremium = false,
+            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
         )
     }
 }

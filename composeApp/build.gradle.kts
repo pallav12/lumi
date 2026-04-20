@@ -1,3 +1,5 @@
+import java.util.Properties
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -13,7 +15,7 @@ plugins {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
 
@@ -58,6 +60,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.purchases.kmp)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver) // ❗ Add iOS driver
@@ -80,8 +83,24 @@ android {
         applicationId = "com.desktop.lumi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 10
-        versionName = "3.0"
+        versionCode = 14
+        versionName = "4.1"
+
+        // Read RevenueCat key from local.properties (not checked into git)
+        val localProps = Properties()
+        val localPropsFile = rootProject.file("local.properties")
+        if (localPropsFile.exists()) {
+            localProps.load(localPropsFile.inputStream())
+        }
+        buildConfigField(
+            "String",
+            "REVENUECAT_KEY",
+            "\"${localProps.getProperty("REVENUECAT_ANDROID_KEY", "goog_ZVTYEiNdKnxVIvxHfaesIWortaG")}\""
+        )
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     packaging {
@@ -98,9 +117,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

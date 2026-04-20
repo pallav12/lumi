@@ -20,6 +20,7 @@ kotlinx-datetime = "0.6.0"
 kotlinxCoroutinesCore = "1.10.2"
 kotlinxCoroutinesCoreVersion = "1.7.3"
 kotlinxSerializationCore = "1.9.0"
+purchasesKmp = "2.10.2+17.55.1"
 review = "2.0.2"
 runtime = "1.5.5"
 sqldelight = "1.5.5"
@@ -49,6 +50,9 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-core-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCoreVersion" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+purchases-kmp = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "purchasesKmp" }
+purchases-kmp-result = { module = "com.revenuecat.purchases:purchases-kmp-result", version.ref = "purchasesKmp" }
+purchases-kmp-ui = { module = "com.revenuecat.purchases:purchases-kmp-ui", version.ref = "purchasesKmp" }
 review = { module = "com.google.android.play:review", version.ref = "review" }
 runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "runtime" }
 sqldelight-runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "sqldelight" }
