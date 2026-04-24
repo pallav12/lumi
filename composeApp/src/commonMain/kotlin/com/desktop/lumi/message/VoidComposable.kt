@@ -3,6 +3,7 @@ package com.desktop.lumi.db.com.desktop.lumi.message
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -20,6 +21,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -48,9 +51,13 @@ fun VoidScreen(
         targetValue = if (state.isBurning) 1f else 0f,
         animationSpec = tween(durationMillis = 3000) // Slow burn
     )
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
         containerColor = VoidDark,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { keyboardController?.hide() })
+        },
         topBar = {
             TopAppBar(
                 title = { }, // minimalist header
@@ -75,6 +82,7 @@ fun VoidScreen(
                     )
                 )
                 .padding(24.dp)
+                .imePadding()
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

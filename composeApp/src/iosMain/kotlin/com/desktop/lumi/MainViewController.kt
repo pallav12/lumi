@@ -8,14 +8,9 @@ import com.desktop.lumi.db.DatabaseDriverFactory
 import com.desktop.lumi.db.com.desktop.lumi.NotificationScheduler
 import com.desktop.lumi.db.com.desktop.lumi.di.AppModule
 import com.desktop.lumi.settings.SettingsViewModel
-import com.revenuecat.purchases.kmp.Purchases
-import platform.Foundation.NSBundle
 
 fun MainViewController() = ComposeUIViewController {
-    // Read key from Info.plist → Secrets.xcconfig (not in source control)
-    val rcKey = NSBundle.mainBundle.objectForInfoDictionaryKey("REVENUECAT_IOS_KEY") as? String ?: ""
-    Purchases.configure(apiKey = rcKey)
-
+    // RevenueCat is initialized in AppDelegate.swift via initializeLumi()
     val scheduler = NotificationScheduler()
     val analytics = Analytics()
     val module = AppModule(DatabaseDriverFactory(), scheduler, analytics)
@@ -47,6 +42,6 @@ fun MainViewController() = ComposeUIViewController {
         anchorViewModel = module.provideAnchorViewModel(),
         billingManager = module.billingManager,
         onRequestNotificationPermission = { /* Handled in AppDelegate on iOS */ },
-        onRequestReview = { /* TODO: Wire up SKStoreReviewController from Swift */ }
+        onRequestReview = { IOSReviewManager.requestReview() }
     )
 }

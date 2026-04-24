@@ -6,9 +6,11 @@
 	<string>$(REVENUECAT_IOS_KEY)</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-    <key>NSUserNotificationAlertStyle</key>
-    <string>alert</string>
-    <key>UNUserNotificationCenter</key>
-    <true/>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<key>UNUserNotificationCenter</key>
+	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lumi needs access to your photos so you can save memories and screenshots to your Anchor.</string>
 </dict>
 </plist>

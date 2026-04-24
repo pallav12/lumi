@@ -95,7 +95,7 @@ android {
         buildConfigField(
             "String",
             "REVENUECAT_KEY",
-            "\"${localProps.getProperty("REVENUECAT_ANDROID_KEY", "goog_ZVTYEiNdKnxVIvxHfaesIWortaG")}\""
+            "\"${localProps.getProperty("REVENUECAT_ANDROID_KEY", "test_lIJCgpGvhJxWCFyZOaGLtRQivOR")}\""
         )
     }
 

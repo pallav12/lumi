@@ -1,7 +1,9 @@
 import UIKit
 import UserNotifications
-// import FirebaseCore       // Uncomment after adding Firebase via SPM/CocoaPods
-// import FirebaseAnalytics  // Uncomment after adding Firebase via SPM/CocoaPods
+import StoreKit
+import ComposeApp
+import FirebaseCore
+import FirebaseAnalytics
 
 class AppDelegate: NSObject, UIApplicationDelegate {
 
@@ -10,8 +12,22 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
 
-        // Initialize Firebase (uncomment after adding Firebase SDK)
-        // FirebaseApp.configure()
+        FirebaseApp.configure()
+
+        // Initialize RevenueCat via Kotlin bridge (reads key from Info.plist)
+        let rcKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_IOS_KEY") as? String ?? ""
+        IOSInitializerKt.initializeLumi(revenueCatApiKey: rcKey)
+
+        // Register StoreKit review handler — Kotlin triggers this after Void burn / Orbit completion
+        IOSReviewManager.shared.setHandler {
+            DispatchQueue.main.async {
+                guard let scene = UIApplication.shared.connectedScenes
+                    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else {
+                    return
+                }
+                SKStoreReviewController.requestReview(in: scene)
+            }
+        }
 
         // Request notification permissions
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -41,14 +57,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         let parameters = userInfo["parameters"] as? [String: Any]
 
-        // Forward to Firebase Analytics (uncomment after adding Firebase SDK)
-        // Analytics.logEvent(eventName, parameters: parameters)
+        Analytics.logEvent(eventName, parameters: parameters)
 
-        // Debug logging (can be removed in production)
         if let parameters = parameters {
-            print("[Firebase Bridge] \(eventName) | \(parameters)")
+            print("[Firebase] \(eventName) | \(parameters)")
         } else {
-            print("[Firebase Bridge] \(eventName)")
+            print("[Firebase] \(eventName)")
         }
     }
 }

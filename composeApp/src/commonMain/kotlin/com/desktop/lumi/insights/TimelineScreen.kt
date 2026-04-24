@@ -414,9 +414,10 @@ private fun getInteractionLabel(type: InteractionType): String {
 
 @OptIn(ExperimentalTime::class)
 private fun formatDateHeader(date: LocalDate): String {
-    // FIX: Use todayIn() directly instead of converting Instant -> LocalDateTime -> Date
     val timeZone = TimeZone.currentSystemDefault()
-    val today = kotlinx.datetime.Clock.System.todayIn(timeZone)
+    val nowMillis = kotlin.time.Clock.System.now().toEpochMilliseconds()
+    val today = kotlinx.datetime.Instant.fromEpochMilliseconds(nowMillis)
+        .toLocalDateTime(timeZone).date
     val yesterday = today.minus(1, DateTimeUnit.DAY)
 
     return when {
